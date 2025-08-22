@@ -340,6 +340,7 @@ module Types {
     body : ?[Nat8];
     method : HttpMethod;
     transform : ?TransformRawResponseFunction;
+    is_replicated : ?Bool;
   };
 
   public type TransformContext = {

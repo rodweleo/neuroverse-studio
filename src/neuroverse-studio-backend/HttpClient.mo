@@ -3,6 +3,7 @@ import Text "mo:base/Text";
 import Blob "mo:base/Blob";
 import Array "mo:base/Array";
 import Iter "mo:base/Iter";
+import Helpers "./Helpers";
 
 module {
 
@@ -19,11 +20,13 @@ module {
   let DEFAULT_CYCLES : Nat = 20_949_972_000;
 
   // Helper function to create default headers
-  func createDefaultHeaders(host : Text) : [HttpHeader] {
+  func createDefaultHeaders(host : Text) : async [HttpHeader] {
+    let idempotency_key : Text = await Helpers.generateUUID();
     [
       { name = "Host"; value = host # ":443" },
-      { name = "User-Agent"; value = "motoko_http_client" },
+      { name = "User-Agent"; value = "neuroverse_http_client" },
       { name = "Content-Type"; value = "application/json" },
+      { name = "Idempotency-Key"; value = idempotency_key },
     ];
   };
 
@@ -36,6 +39,7 @@ module {
         case null url;
       };
     };
+
     let parts = Iter.toArray(Text.split(withoutProtocol, #char('/')));
     if (parts.size() > 0) parts[0] else withoutProtocol;
   };
@@ -56,14 +60,16 @@ module {
 
   // Helper function to convert [Nat8] to Text
   func nat8ArrayToText(bytes : [Nat8]) : Text {
-    switch (Text.decodeUtf8(Blob.fromArray(bytes))) {
-      case null { "Error: Unable to decode response" };
+    let decoded_response : Text = switch (Text.decodeUtf8(Blob.fromArray(bytes))) {
+      case (null) { "Error: Unable to decode response" };
       case (?text) { text };
     };
+    decoded_response;
   };
 
   // Core HTTP request function
   func makeHttpRequest(
+    host : Text,
     url : Text,
     method : HttpMethod,
     body : ?Text,
@@ -73,8 +79,7 @@ module {
   ) : async Text {
 
     let ic : IC = actor ("aaaaa-aa");
-    let host = extractHost(url);
-    let defaultHeaders = createDefaultHeaders(host);
+    let defaultHeaders = await createDefaultHeaders(host);
     let finalHeaders = mergeHeaders(defaultHeaders, headers);
     let cyclesAmount = switch (cycles) { case null DEFAULT_CYCLES; case (?c) c };
 
@@ -95,6 +100,7 @@ module {
       body = requestBody;
       method = method;
       transform = ?transform_context;
+      is_replicated = ?false;
     };
 
     let httpResponse : HttpResponsePayload = await (with cycles = cyclesAmount) ic.http_request(httpRequest);
@@ -104,48 +110,53 @@ module {
 
   // Public function for GET requests
   public func sendGetRequest(
+    host : Text,
     url : Text,
     headers : ?[HttpHeader],
     cycles : ?Nat,
     transform : shared query Types.TransformArgs -> async Types.HttpResponsePayload,
   ) : async Text {
-    await makeHttpRequest(url, #get, null, headers, cycles, transform);
+    await makeHttpRequest(host, url, #get, null, headers, cycles, transform);
   };
 
   // Public function for POST requests
   public func sendPostRequest(
+    host : Text,
     url : Text,
     body : Text,
     headers : ?[HttpHeader],
     cycles : ?Nat,
     transform : shared query Types.TransformArgs -> async Types.HttpResponsePayload,
   ) : async Text {
-    await makeHttpRequest(url, #post, ?body, headers, cycles, transform);
+    await makeHttpRequest(host, url, #post, ?body, headers, cycles, transform);
   };
 
   // Public function for PUT requests
   public func sendPutRequest(
+    host : Text,
     url : Text,
     body : Text,
     headers : ?[HttpHeader],
     cycles : ?Nat,
     transform : shared query Types.TransformArgs -> async Types.HttpResponsePayload,
   ) : async Text {
-    await makeHttpRequest(url, #put, ?body, headers, cycles, transform);
+    await makeHttpRequest(host, url, #put, ?body, headers, cycles, transform);
   };
 
   // Public function for DELETE requests
   public func sendDeleteRequest(
+    host : Text,
     url : Text,
     headers : ?[HttpHeader],
     cycles : ?Nat,
     transform : shared query Types.TransformArgs -> async Types.HttpResponsePayload,
   ) : async Text {
-    await makeHttpRequest(url, #delete, null, headers, cycles, transform);
+    await makeHttpRequest(host, url, #delete, null, headers, cycles, transform);
   };
 
   // Advanced function with custom transform
   public func sendRequestWithTransform(
+    host : Text,
     url : Text,
     method : HttpMethod,
     body : ?Text,
@@ -153,7 +164,7 @@ module {
     cycles : ?Nat,
     transform : shared query Types.TransformArgs -> async Types.HttpResponsePayload,
   ) : async Text {
-    await makeHttpRequest(url, method, body, headers, cycles, transform);
+    await makeHttpRequest(host, url, method, body, headers, cycles, transform);
   };
 
   // Convenience function for JSON POST requests
@@ -165,17 +176,7 @@ module {
     cycles : ?Nat,
     transform : shared query Types.TransformArgs -> async Types.HttpResponsePayload,
   ) : async Text {
-    let jsonHeaders = [
-      { name = "Host"; value = host # ":443" },
-      { name = "User-Agent"; value = "gen_ai_api_canister" },
-      { name = "Content-Type"; value = "application/json" },
-    ];
 
-    let finalHeaders = switch (additionalHeaders) {
-      case null ?jsonHeaders;
-      case (?additional) ?Array.append(jsonHeaders, additional);
-    };
-
-    await sendPostRequest(url, jsonBody, finalHeaders, cycles, transform);
+    await sendPostRequest(host, url, jsonBody, additionalHeaders, cycles, transform);
   };
 };

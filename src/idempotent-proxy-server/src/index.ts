@@ -11,13 +11,11 @@
  *
  * Learn more at https://developers.cloudflare.com/workers/
  */
-import { v4 as uuidV4 } from 'uuid';
 import { initializeAgent, promptAgent } from './agent';
 
 export default {
 	async fetch(request: Request, env, ctx): Promise<Response> {
 		const url = new URL(request.url);
-		const requestId = uuidV4();
 
 		if (url.pathname === '/api/v1/chat' && request.method === 'POST') {
 			try {
@@ -27,6 +25,7 @@ export default {
 				const agentResponse = await promptAgent(agent, config, message);
 
 				return new Response(agentResponse, {
+					status: 200,
 					headers: { 'Content-Type': 'text/plain' },
 				});
 			} catch (err) {
@@ -39,9 +38,7 @@ export default {
 
 		return new Response('Not Found', {
 			status: 404,
-			headers: {
-				'X-Request-Id': requestId,
-			},
+			headers: { 'Content-Type': 'text/plain' },
 		});
 	},
 } satisfies ExportedHandler<Env>;

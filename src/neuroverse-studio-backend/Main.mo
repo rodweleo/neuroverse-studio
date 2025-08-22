@@ -20,6 +20,7 @@ import Helpers "Helpers";
 import ToolRegistry "ToolRegistry";
 import Tool "./tool";
 import HttpClient "./HttpClient";
+import Cycles "mo:base/ExperimentalCycles";
 
 persistent actor NeuroVerse {
 
@@ -420,12 +421,7 @@ persistent actor NeuroVerse {
     let url = "https://" # host # "/api/v1/chat";
     let requestBodyJson = "{\"message\": \"" # prompt # "\"}";
 
-    // Custom headers if needed (optional)
-    let customHeaders = [
-      { name = "User-Agent"; value = "google_gemini_api_canister" },
-    ];
-
-    await HttpClient.sendJsonPostRequest(host, url, requestBodyJson, ?customHeaders, null, transform);
+    await HttpClient.sendJsonPostRequest(host, url, requestBodyJson, null, null, transform);
   };
 
   /** IMPLEMENTATION OF BITCOIN **/
@@ -545,8 +541,14 @@ persistent actor NeuroVerse {
     transformed;
   };
 
-  /**PERSISTING STORAGE**/
+  /**
+  * CYCLES FUNCTION IMPLEMENTATIONS
+  */
+  public query func remaining_cycles() : async Nat {
+    return Cycles.balance();
+  };
 
+  /**PERSISTING STORAGE**/
   system func preupgrade() {
     stableAgents := Iter.toArray(agents.entries());
 
