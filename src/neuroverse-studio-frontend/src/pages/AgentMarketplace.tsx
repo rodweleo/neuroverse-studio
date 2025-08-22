@@ -10,6 +10,10 @@ const AgentMarketplace = () => {
   const { data: agents } = useAllAgents();
   const { data: agentVendors } = useAllAgentVendors();
 
+  const publicAgents = agents.filter((a) => {
+    return a.isPublic;
+  });
+
   return (
     <div className="container py-8 space-y-8">
       {/* Header */}
@@ -43,7 +47,7 @@ const AgentMarketplace = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {agents ? agents.length : 0}
+              {publicAgents ? publicAgents.length : 0}
             </div>
             <p className="text-xs text-muted-foreground">
               Active in marketplace

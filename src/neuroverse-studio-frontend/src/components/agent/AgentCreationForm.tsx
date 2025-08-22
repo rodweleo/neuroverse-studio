@@ -22,6 +22,7 @@ import { useAuth } from "@/contexts/use-auth-client";
 import AuthBtn from "@/components/auth/auth-btn";
 import { useAllTools } from "@/hooks/use-all-tools";
 import { Link } from "react-router-dom";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface AgentFormData {
   name: string;
@@ -31,19 +32,20 @@ interface AgentFormData {
   icon: string;
   color: string;
   price: number;
+  isPublic: boolean;
+  isFree: boolean;
+  tools: string[];
   temperature: number;
   maxTokens: number;
   knowledgeBase: KnowledgeDocument[];
   knowledgeConfig: KnowledgeConfig;
-  isFree: boolean;
-  tools: string[];
 }
 
 const AgentCreationForm = () => {
   const { principal, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const { data: availableTools } = useAllTools();
-
+  console.log(availableTools);
   const [formData, setFormData] = useState<AgentFormData>({
     name: "",
     description: "",
@@ -52,6 +54,9 @@ const AgentCreationForm = () => {
     icon: "Bot",
     color: "text-neon-blue",
     price: 0.1,
+    isPublic: false,
+    isFree: true,
+    tools: [],
     temperature: 0.7,
     maxTokens: 1000,
     knowledgeBase: [],
@@ -62,8 +67,6 @@ const AgentCreationForm = () => {
       chunkSize: 1000,
       overlap: 200,
     },
-    isFree: true,
-    tools: [],
   });
   const [isLoading, setIsLoading] = useState(false);
   const [toolSearchQuery, setToolSearchQuery] = useState("");
@@ -150,7 +153,7 @@ const AgentCreationForm = () => {
         formData.description,
         formData.systemPrompt,
         formData.isFree,
-        true,
+        formData.isPublic,
         BigInt(formData.price),
         principal,
         formData.tools.length > 0,
@@ -184,6 +187,7 @@ const AgentCreationForm = () => {
       icon: "Bot",
       color: "text-neon-blue",
       price: 0.1,
+      isPublic: false,
       temperature: 0.7,
       maxTokens: 1000,
       knowledgeBase: [],
@@ -369,6 +373,35 @@ const AgentCreationForm = () => {
                     }
                     className="bg-black/20 focus:ring-neon-blue"
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="visibility" className="text-lg font-bold">
+                    Visibility
+                  </Label>
+                  <RadioGroup
+                    value={formData.isPublic ? "public" : "private"}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        isPublic: value === "public",
+                      }))
+                    }
+                    className="flex flex-col gap-4"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="public" id="public" />
+                      <Label htmlFor="public">
+                        Public (anyone can see and interact with the agent)
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="private" id="private" />
+                      <Label htmlFor="private">
+                        Private (only you can see and interact with the agent)
+                      </Label>
+                    </div>
+                  </RadioGroup>
                 </div>
               </TabsContent>
 
