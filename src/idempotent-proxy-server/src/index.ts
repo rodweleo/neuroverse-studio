@@ -18,7 +18,7 @@ export default {
 	async fetch(request: Request, env, ctx): Promise<Response> {
 		const url = new URL(request.url);
 		const requestId = uuidV4();
-		
+
 		if (url.pathname === '/api/v1/chat' && request.method === 'POST') {
 			try {
 				const body: any = await request.json();
@@ -26,15 +26,13 @@ export default {
 				const { agent, config } = initializeAgent(env);
 				const agentResponse = await promptAgent(agent, config, message);
 
-				return Response.json(agentResponse, {
-					headers: { 'X-Request-Id': requestId, 'X-Cache': 'MISS' },
+				return new Response(agentResponse, {
+					headers: { 'Content-Type': 'text/plain' },
 				});
 			} catch (err) {
 				return new Response(`Error: ${(err as Error).message}`, {
 					status: 500,
-					headers: {
-						'X-Request-Id': requestId,
-					},
+					headers: { 'Content-Type': 'text/plain' },
 				});
 			}
 		}
