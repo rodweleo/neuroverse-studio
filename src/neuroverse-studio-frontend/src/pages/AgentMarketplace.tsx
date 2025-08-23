@@ -10,7 +10,7 @@ const AgentMarketplace = () => {
   const { data: agents } = useAllAgents();
   const { data: agentVendors } = useAllAgentVendors();
 
-  const publicAgents = agents.filter((a) => {
+  const publicAgents = agents?.filter((a) => {
     return a.isPublic;
   });
 

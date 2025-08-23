@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Rocket, Settings, FileText, Puzzle, ALargeSmall } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/sonner";
 import KnowledgeBaseManager, { KnowledgeConfig } from "./KnowledgeBaseManager";
 import { KnowledgeDocument } from "./DocumentUpload";
 import NeuroverseBackendActor from "@/utils/NeuroverseBackendActor";
@@ -23,6 +23,7 @@ import AuthBtn from "@/components/auth/auth-btn";
 import { useAllTools } from "@/hooks/use-all-tools";
 import { Link } from "react-router-dom";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { CreateAgentArgs } from "../../../../declarations/neuroverse-studio-backend/neuroverse-studio-backend.did";
 
 interface AgentFormData {
   name: string;
@@ -43,9 +44,8 @@ interface AgentFormData {
 
 const AgentCreationForm = () => {
   const { principal, isAuthenticated } = useAuth();
-  const { toast } = useToast();
   const { data: availableTools } = useAllTools();
-  console.log(availableTools);
+
   const [formData, setFormData] = useState<AgentFormData>({
     name: "",
     description: "",
@@ -136,42 +136,46 @@ const AgentCreationForm = () => {
       !formData.systemPrompt ||
       !formData.price
     ) {
-      toast({
-        title: "Validation Error",
+      toast.error("Validation Error: MISSING FIELDS", {
         description: `Please fill in all required fields: Name, Description, System Prompt, Category, Price`,
-        variant: "destructive",
       });
       setIsLoading(false);
       return;
     }
 
     try {
-      await NeuroverseBackendActor.createAgent(
-        Date.now().toString(),
-        formData.name,
-        formData.category,
-        formData.description,
-        formData.systemPrompt,
-        formData.isFree,
-        formData.isPublic,
-        BigInt(formData.price),
-        principal,
-        formData.tools.length > 0,
-        formData.tools
+      let createAgentArgs: CreateAgentArgs = {
+        agentId: Date.now().toString(),
+        name: formData.name,
+        category: formData.category,
+        description: formData.description,
+        system_prompt: formData.systemPrompt,
+        isFree: formData.isFree,
+        isPublic: formData.isPublic,
+        price: BigInt(formData.price),
+        vendor: principal,
+        has_tools: formData.tools.length > 0,
+        tools: formData.tools,
+      };
+      const response = await NeuroverseBackendActor.createAgent(
+        createAgentArgs
       );
 
-      toast({
-        title: "Agent Created Successfully!",
-        description: `${formData.name} has been deployed on the NeuroVerse.`,
-      });
+      if ("success" in response) {
+        toast.success("Agent deployed cuccessfully!", {
+          description: response.success.message,
+        });
+      } else if ("failed" in response) {
+        toast.success("Failed to deploy agent!", {
+          description: response.failed.message,
+        });
+      }
 
       setIsLoading(false);
     } catch (e) {
       console.log(e);
-      toast({
-        title: "Agent creation error",
-        description: "Something went wrong!",
-        variant: "destructive",
+      toast.error("Agent deployment error", {
+        description: `Something went wrong! ${e.message}`,
       });
       setIsLoading(false);
     } finally {

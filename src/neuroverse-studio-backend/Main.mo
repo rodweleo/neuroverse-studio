@@ -18,9 +18,13 @@ import P2trKeyOnly "P2trKeyOnly";
 import P2tr "P2tr";
 import Helpers "Helpers";
 import ToolRegistry "ToolRegistry";
-import Tool "./tool";
+import Tool "./Tool";
 import HttpClient "./HttpClient";
 import Cycles "mo:base/ExperimentalCycles";
+import TokenHelper "./TokenHelper";
+import Icrc1Ledger "canister:icrc1_ledger_canister";
+import Nat "mo:base/Nat";
+import Result "mo:base/Result";
 
 persistent actor NeuroVerse {
 
@@ -140,33 +144,58 @@ persistent actor NeuroVerse {
     };
   };
 
-  public func createAgent(agentId : Text, name : Text, category : Text, description : Text, system_prompt : Text, isFree : Bool, isPublic : Bool, price : Nat, vendor : Principal, has_tools : Bool, tools : [Text]) : async () {
+  public func createAgent(createAgentArgs : Types.CreateAgentArgs) : async Types.CreateAgentResponse {
+    try {
+      let agent : Types.Agent = {
+        id = createAgentArgs.agentId;
+        name = createAgentArgs.name;
+        category = createAgentArgs.category;
+        description = createAgentArgs.description;
+        system_prompt = createAgentArgs.system_prompt;
+        has_tools = createAgentArgs.has_tools;
+        tools = createAgentArgs.tools;
+        isFree = createAgentArgs.isFree;
+        isPublic = createAgentArgs.isPublic;
+        price = createAgentArgs.price;
+        created_by = createAgentArgs.vendor;
+      };
 
-    let agent : Types.Agent = {
-      id = agentId;
-      name = name;
-      category = category;
-      description = description;
-      system_prompt = system_prompt;
-      has_tools = has_tools;
-      tools = tools;
-      isFree = isFree;
-      isPublic = isPublic;
-      price = price;
-      created_by = vendor;
-    };
+      // Store in global agents map
+      agents.put(createAgentArgs.agentId, agent);
 
-    // Store in global agents map
-    agents.put(agentId, agent);
+      // Get or create the user's agent map
+      let agentsMap = switch (userAgents.get(createAgentArgs.vendor)) {
+        case (?map) map;
+        case null HashMap.HashMap<Text, Types.Agent>(5, Text.equal, Text.hash);
+      };
 
-    // Get or create the user's agent map
-    let agentsMap = switch (userAgents.get(vendor)) {
-      case (?map) map;
-      case null HashMap.HashMap<Text, Types.Agent>(5, Text.equal, Text.hash);
-    };
+      agentsMap.put(createAgentArgs.agentId, agent);
+      userAgents.put(createAgentArgs.vendor, agentsMap);
 
-    agentsMap.put(agentId, agent);
-    userAgents.put(vendor, agentsMap);
+      // REWARD THE USER FOR DEPLOYING AN AGENT SUCCESSFULLY ON NEUROVERSE
+      let response = await transferNeuro(10000);
+
+      switch (response) {
+        case (#ok(blockIndex)) {
+          #success {
+            status = "SUCCESS";
+            message = createAgentArgs.name # " agent deployed and you've been rewarded 10000 NEUROS. Block index: " # Nat.toText(blockIndex);
+          };
+        };
+        case (#err(msg)) {
+          #failed {
+            status = "FAIL";
+            message = createAgentArgs.name # "agent created, but reward failed: " # msg;
+          };
+        };
+      };
+    } catch (error : Error) {
+      #failed {
+        status = "FAIL";
+        message = "Error creating agent: " # Error.message(error);
+      };
+    }
+
   };
 
   public func getAllAgents() : async [Types.Agent] {
@@ -520,6 +549,31 @@ persistent actor NeuroVerse {
 
   public func getToolById(id : Text) : async ?ToolRegistry.Tool {
     tools.get(id);
+  };
+
+  /**
+  * NEURO TOKEN FUNCTION DEFINITION
+  */
+  public shared ({ caller }) func transferNeuro(amount : Nat) : async Result.Result<Nat, Text> {
+    let userAccount : Icrc1Ledger.Account = {
+      owner = caller;
+      subaccount = null;
+    };
+
+    let transferResult = await TokenHelper.transferICRC1({
+      amount = amount;
+      toAccount = userAccount;
+    });
+
+    // switch (transferResult) {
+    //   case (#ok(blockIndex)) {
+    //     "Success! Transfer at block index: " # Nat.toText(blockIndex);
+    //   };
+    //   case (#err(msg)) {
+    //     "Transfer failed: " # msg;
+    //   };
+    // };
+    transferResult;
   };
 
   /**

@@ -352,4 +352,24 @@ module Types {
     http_request : HttpRequestArgs -> async HttpResponsePayload;
   };
 
+  /**
+  * AGENT TYPES
+  */
+  public type CreateAgentArgs = {
+    agentId : Text;
+    name : Text;
+    category : Text;
+    description : Text;
+    system_prompt : Text;
+    isFree : Bool;
+    isPublic : Bool;
+    price : Nat;
+    vendor : Principal;
+    has_tools : Bool;
+    tools : [Text];
+  };
+  public type CreateAgentResponse = {
+    #success : { status : Text; message : Text };
+    #failed : { status : Text; message : Text };
+  };
 };

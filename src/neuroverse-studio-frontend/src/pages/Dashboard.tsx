@@ -1,16 +1,25 @@
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Brain, TrendingUp, DollarSign, Users, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useAuth } from "@/contexts/use-auth-client"
-import useUserAgents from '@/hooks/useUserAgents';
+import { useAuth } from "@/contexts/use-auth-client";
+import useUserAgents from "@/hooks/useUserAgents";
+import { useAccountTokens } from "@/hooks/use-account-token";
 
 const Dashboard = () => {
-  const { principal } = useAuth()
-  const { data: userAgents } = useUserAgents(principal)
-
+  const { principal } = useAuth();
+  const { data: userAgents } = useUserAgents(principal);
+  const { data: accountTokens } = useAccountTokens({
+    owner: principal,
+  });
 
   return (
     <div className="container py-8 space-y-8">
@@ -32,57 +41,87 @@ const Dashboard = () => {
       </div>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
         <Card className="glassmorphic border-neon-blue/20">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Agents</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="font-medium">Total Agents</CardTitle>
             <Brain className="h-4 w-4 text-neon-blue" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{userAgents?.length}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-2xl sm:text-4xl font-bold">
+              {userAgents?.length}
+            </div>
+          </CardContent>
+          <CardFooter>
+            <p className="text-xm sm:text-sm text-muted-foreground">
               Active AI agents
             </p>
-          </CardContent>
-        </Card>
-
-        <Card className="glassmorphic border-neon-purple/20">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Interactions</CardTitle>
-            <Users className="h-4 w-4 text-neon-purple" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{0}</div>
-            <p className="text-xs text-muted-foreground">
-              User conversations
-            </p>
-          </CardContent>
+          </CardFooter>
         </Card>
 
         <Card className="glassmorphic border-acid-green/20">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="font-medium">Total Earnings</CardTitle>
             <DollarSign className="h-4 w-4 text-acid-green" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{0} ICP</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-2xl sm:text-4xl font-bold">{0} ICP</div>
+          </CardContent>
+          <CardFooter>
+            <p className="text-xm sm:text-sm text-muted-foreground">
               Revenue generated
             </p>
-          </CardContent>
+          </CardFooter>
         </Card>
 
         <Card className="glassmorphic border-neon-blue/20">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Top Performer</CardTitle>
-            <TrendingUp className="h-4 w-4 text-neon-blue" />
+          <CardHeader>
+            <CardTitle className=" flex flex-row items-center justify-between font-medium">
+              Token Balances
+              <TrendingUp className="h-4 w-4 text-neon-blue" />
+            </CardTitle>
+            <CardDescription>
+              {accountTokens && (
+                <span className="text-gray-400">
+                  {accountTokens?.length} Token
+                  {accountTokens?.length > 1 && "s"}
+                </span>
+              )}
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-lg font-bold">{0}</div>
-            <p className="text-xs text-muted-foreground">
-              Most interactions
-            </p>
+            {accountTokens && (
+              <ul className="bg-gray-800 h-full w-full p-2 rounded-md space-y-4">
+                {accountTokens?.map((token, idx: number) => {
+                  return (
+                    <li key={`account-token-${idx}`}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <img
+                            src="/logos/ICP_Logo.png"
+                            width="100"
+                            height="100"
+                            className="size-8 p-1 bg-gray-800 rounded-full"
+                          />
+                          <h2>{token.name}</h2>
+                        </div>
+                        <ul>
+                          <li>
+                            {Number(token.formattedBalance)} {token.symbol}
+                          </li>
+                        </ul>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </CardContent>
+          <CardFooter>
+            <p className="text-xm sm:text-sm text-muted-foreground">
+              Available Balance
+            </p>
+          </CardFooter>
         </Card>
       </div>
 
@@ -144,7 +183,10 @@ const Dashboard = () => {
 
               <div className="text-center py-12 text-muted-foreground">
                 <Brain className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No agent interactions yet. Start chatting with agents to see analytics!</p>
+                <p>
+                  No agent interactions yet. Start chatting with agents to see
+                  analytics!
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -155,7 +197,9 @@ const Dashboard = () => {
             <Card className="glassmorphic border-neon-purple/20">
               <CardHeader>
                 <CardTitle>Usage Trends</CardTitle>
-                <CardDescription>Agent interaction patterns over time</CardDescription>
+                <CardDescription>
+                  Agent interaction patterns over time
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -222,25 +266,33 @@ const Dashboard = () => {
                   <div className="text-2xl font-bold text-acid-green">
                     {0} ICP
                   </div>
-                  <div className="text-sm text-muted-foreground">Total Earned</div>
+                  <div className="text-sm text-muted-foreground">
+                    Total Earned
+                  </div>
                 </div>
                 <div className="text-center p-4 bg-neon-blue/10 rounded-lg">
                   <div className="text-2xl font-bold text-neon-blue">
                     {0} ICP
                   </div>
-                  <div className="text-sm text-muted-foreground">Avg per Agent</div>
+                  <div className="text-sm text-muted-foreground">
+                    Avg per Agent
+                  </div>
                 </div>
                 <div className="text-center p-4 bg-neon-purple/10 rounded-lg">
                   <div className="text-2xl font-bold text-neon-purple">
                     0.10 ICP
                   </div>
-                  <div className="text-sm text-muted-foreground">Per Interaction</div>
+                  <div className="text-sm text-muted-foreground">
+                    Per Interaction
+                  </div>
                 </div>
               </div>
 
               <div className="text-center py-8 text-muted-foreground">
                 <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Payment history and detailed revenue reports coming soon...</p>
+                <p>
+                  Payment history and detailed revenue reports coming soon...
+                </p>
               </div>
             </CardContent>
           </Card>

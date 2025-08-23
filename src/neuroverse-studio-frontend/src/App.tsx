@@ -16,10 +16,12 @@ import ChatPage from "./pages/Chat/c/[chatId]/page";
 import AccountModal from "./components/account/account-modal";
 import AuthModal from "./components/auth/auth-modal";
 import { AuthProvider } from "@/contexts/use-auth-client";
+import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 
 const App = () => (
   <Providers>
     <Toaster />
+    <SonnerToaster />
     <Sonner />
     <BrowserRouter>
       <AuthProvider>

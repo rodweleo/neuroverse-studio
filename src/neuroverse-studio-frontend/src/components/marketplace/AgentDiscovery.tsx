@@ -28,7 +28,7 @@ const AgentDiscovery = () => {
   const [sortBy, setSortBy] = useState("popularity");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-  const publicAgents = agents.filter((a) => {
+  const publicAgents = agents?.filter((a) => {
     return a.isPublic;
   });
 

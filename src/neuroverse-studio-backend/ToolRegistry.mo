@@ -1,6 +1,6 @@
 import Text "mo:base/Text";
 import Principal "mo:base/Principal";
-import Tool "./tool";
+import Tool "./Tool";
 
 module ToolRegistry {
   public type Tool = {
