@@ -1,24 +1,43 @@
-
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { ArrowRight, Eye } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import ChatModal from '@/components/chat/ChatModal';
-import AgentPreview from './AgentPreview';
-import { Agent } from '../../../../declarations/neuroverse_backend/neuroverse_backend.did';
-import { Badge } from "@/components/ui/badge"
-import PayWithPlugWalletBtn from "@/components/transactions/PayWithPlugWalletBtn"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Eye } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import ChatModal from "@/components/chat/ChatModal";
+import AgentPreview from "./AgentPreview";
+import { Agent } from "../../../../declarations/neuroverse-studio-backend/neuroverse-studio-backend.did";
+import { Badge } from "@/components/ui/badge";
+import PayWithPlugWalletBtn from "@/components/transactions/PayWithPlugWalletBtn";
+import { PlugWalletRequestTransferParams } from "@/utils/types";
+import { useAuth } from "@/contexts/use-auth-client";
+import { getAccountIdFromPrincipal } from "@/utils";
 
 interface EnhancedAgentCardProps {
   agent: Agent;
 }
 
 const EnhancedAgentCard = ({ agent }: EnhancedAgentCardProps) => {
+  const { principal: fallbackPrincipal } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const { toast } = useToast();
 
-  const { isFree, created_by } = agent
+  const { isFree, created_by, price } = agent;
+
+  const accountId = getAccountIdFromPrincipal(
+    created_by ? created_by : fallbackPrincipal
+  );
+
+  const transferArgs: PlugWalletRequestTransferParams = {
+    to: accountId,
+    amount: Number(price) * 100000000,
+    opts: {
+      canisterId: "u6s2n-gx777-77774-qaaba-cai",
+      from_subaccount: null,
+      created_at_time: {
+        timestamp_nanos: null,
+      },
+    },
+  };
 
   // const handleShare = async () => {
   //   if (navigator.share) {
@@ -52,18 +71,21 @@ const EnhancedAgentCard = ({ agent }: EnhancedAgentCardProps) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div>
-                <h3 className="text-xl font-orbitron font-bold">{agent.name}</h3>
+                <h3 className="text-xl font-orbitron font-bold">
+                  {agent.name}
+                </h3>
                 <p className={`text-sm font-bold`}>{agent.category}</p>
               </div>
-
             </div>
 
-            {
-              agent.isFree ? <Badge>FREE</Badge> : <div className="flex items-center gap-2 *:text-sm">
+            {agent.isFree ? (
+              <Badge>FREE</Badge>
+            ) : (
+              <div className="flex items-center gap-2 *:text-sm">
                 <h3>Price:</h3>
                 <Badge>{agent.price?.toString()} ICP</Badge>
               </div>
-            }
+            )}
           </div>
 
           <p className="text-muted-foreground flex-grow text-sm leading-relaxed">
@@ -92,15 +114,12 @@ const EnhancedAgentCard = ({ agent }: EnhancedAgentCardProps) => {
               Start Conversation <ArrowRight className="h-4 w-4" />
             </Button>
 
-            {
-              !isFree && <PayWithPlugWalletBtn
+            {!isFree && (
+              <PayWithPlugWalletBtn
                 className="w-full"
-                params={{
-                  principal: created_by,
-                  amount: Number(agent.price)
-                }}
+                transferArgs={transferArgs}
               />
-            }
+            )}
           </div>
         </div>
       </div>
@@ -112,7 +131,11 @@ const EnhancedAgentCard = ({ agent }: EnhancedAgentCardProps) => {
         onStartChat={handleStartChat}
       />
 
-      <ChatModal agent={agent} isOpen={isModalOpen} setIsOpen={setIsModalOpen} />
+      <ChatModal
+        agent={agent}
+        isOpen={isModalOpen}
+        setIsOpen={setIsModalOpen}
+      />
     </>
   );
 };

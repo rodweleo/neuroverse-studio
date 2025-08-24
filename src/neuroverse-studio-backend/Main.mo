@@ -173,7 +173,14 @@ persistent actor NeuroVerse {
       userAgents.put(createAgentArgs.vendor, agentsMap);
 
       // REWARD THE USER FOR DEPLOYING AN AGENT SUCCESSFULLY ON NEUROVERSE
-      let response = await transferNeuro(10000);
+
+      let response = await transferNeuro(
+        10000,
+        {
+          owner = createAgentArgs.vendor;
+          subaccount = null;
+        },
+      );
 
       switch (response) {
         case (#ok(blockIndex)) {
@@ -185,7 +192,7 @@ persistent actor NeuroVerse {
         case (#err(msg)) {
           #failed {
             status = "FAIL";
-            message = createAgentArgs.name # "agent created, but reward failed: " # msg;
+            message = createAgentArgs.name # " agent created, but reward failed: " # msg;
           };
         };
       };
@@ -554,25 +561,11 @@ persistent actor NeuroVerse {
   /**
   * NEURO TOKEN FUNCTION DEFINITION
   */
-  public shared ({ caller }) func transferNeuro(amount : Nat) : async Result.Result<Nat, Text> {
-    let userAccount : Icrc1Ledger.Account = {
-      owner = caller;
-      subaccount = null;
-    };
-
+  public shared func transferNeuro(amount : Nat, to : Icrc1Ledger.Account) : async Result.Result<Nat, Text> {
     let transferResult = await TokenHelper.transferICRC1({
       amount = amount;
-      toAccount = userAccount;
+      toAccount = to;
     });
-
-    // switch (transferResult) {
-    //   case (#ok(blockIndex)) {
-    //     "Success! Transfer at block index: " # Nat.toText(blockIndex);
-    //   };
-    //   case (#err(msg)) {
-    //     "Transfer failed: " # msg;
-    //   };
-    // };
     transferResult;
   };
 

@@ -8,7 +8,13 @@ const AgentGrid = () => {
   const { data: agents } = useAllAgents();
 
   // Show only first 3 agents on home page
-  const featuredAgents = agents ? agents.slice(0, 3) : [];
+  const featuredAgents = agents
+    ? agents
+        .filter((a) => {
+          return a.isPublic;
+        })
+        .slice(0, 3)
+    : [];
 
   return (
     <div>

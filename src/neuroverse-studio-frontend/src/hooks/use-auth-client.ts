@@ -14,7 +14,7 @@ import fetch from "isomorphic-fetch";
 
 const development = process.env.DFX_NETWORK !== "ic";
 const CANISTER_ID_INTERNET_IDENTITY =
-  process.env.CANISTER_ID_INTERNET_IDENTITY || "u6s2n-gx777-77774-qaaba-cai";
+  process.env.CANISTER_ID_INTERNET_IDENTITY || "uzt4z-lp777-77774-qaabq-cai";
 
 const getIdentityProvider = () => {
   if (typeof window !== "undefined") {

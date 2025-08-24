@@ -120,7 +120,7 @@ class TokenLedgerCanister {
 
       const canisterId = ledgerCanisterId
         ? ledgerCanisterId
-        : "ulvla-h7777-77774-qaacq-cai";
+        : "u6s2n-gx777-77774-qaaba-cai";
 
       if (await authClient.isAuthenticated()) {
         const identity = authClient.getIdentity();
