@@ -1,6 +1,6 @@
 import { toast } from "@/components/ui/sonner";
 import { PlugWalletRequestTransferParams } from "@/utils/types";
-import { idlFactory } from "../../../declarations/neuroverse-studio-backend";
+import { idlFactory } from "../../../declarations/icrc1_ledger_canister";
 
 class TokenService {
   constructor() {}
@@ -8,8 +8,9 @@ class TokenService {
   async plugWalletRequestTransfer(args: PlugWalletRequestTransferParams) {
     try {
       const whitelist = [
-        "umunu-kh777-77774-qaaca-cai",
-        "u6s2n-gx777-77774-qaaba-cai",
+        process.env.CANISTER_ID_NEUROVERSE_STUDIO_BACKEND!,
+        process.env.CANISTER_ID_ICRC1_LEDGER_CANISTER!,
+        process.env.CANISTER_ID_ICP_LEDGER_CANISTER!,
       ];
       const host =
         process.env.DFX_NETWORK === "local"
@@ -25,12 +26,19 @@ class TokenService {
       if (hasAllowed) {
         try {
           const actor = await window.ic.plug.createActor({
-            canisterId: args.opts.canisterId,
+            canisterId: args.canisterId,
             interfaceFactory: idlFactory,
           });
-          console.log(actor);
-          const txReceipt = await window.ic?.plug?.requestTransfer(args);
-          return txReceipt;
+          const transferArgs = {
+            to: { owner: args.to, subaccount: [] },
+            amount: args.amount,
+            fee: args.fee,
+            memo: null,
+            from_subaccount: null,
+            created_at_time: null,
+          };
+          const response = await actor.icrc1_transfer(transferArgs);
+          return response;
         } catch (error) {
           if (typeof error !== "string") {
             toast.error("Transfer error", {

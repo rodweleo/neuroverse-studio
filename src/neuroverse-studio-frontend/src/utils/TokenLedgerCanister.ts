@@ -120,7 +120,7 @@ class TokenLedgerCanister {
 
       const canisterId = ledgerCanisterId
         ? ledgerCanisterId
-        : "u6s2n-gx777-77774-qaaba-cai";
+        : process.env.CANISTER_ID_ICRC1_LEDGER_CANISTER;
 
       if (await authClient.isAuthenticated()) {
         const identity = authClient.getIdentity();

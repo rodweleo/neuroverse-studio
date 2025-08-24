@@ -1,3 +1,5 @@
+import type { Principal } from "@dfinity/principal";
+
 export type Tool = {
   id: string;
   name: string;
@@ -12,15 +14,14 @@ export type Tool = {
 };
 
 export type PlugWalletRequestTransferParams = {
-  to: string;
-  amount: number;
-  opts: {
-    canisterId: string; // ICRC or native token canister ID
-    fee?: number;
-    memo?: number;
-    from_subaccount: null;
-    created_at_time: {
-      timestamp_nanos: null;
-    };
+  to: {
+    owner: Principal;
+    subaccount: any[];
   };
+  canisterId: string;
+  amount: BigInt;
+  fee: BigInt;
+  memo?: number;
+  from_subaccount?: string;
+  created_at_time?: string;
 };

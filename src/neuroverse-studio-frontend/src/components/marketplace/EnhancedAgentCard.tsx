@@ -28,15 +28,14 @@ const EnhancedAgentCard = ({ agent }: EnhancedAgentCardProps) => {
   );
 
   const transferArgs: PlugWalletRequestTransferParams = {
-    to: accountId,
-    amount: Number(price) * 100000000,
-    opts: {
-      canisterId: "u6s2n-gx777-77774-qaaba-cai",
-      from_subaccount: null,
-      created_at_time: {
-        timestamp_nanos: null,
-      },
+    to: {
+      owner: created_by,
+      subaccount: [],
     },
+    amount: BigInt(Number(price) * 100000000),
+    canisterId: process.env.CANISTER_ID_ICRC1_LEDGER_CANISTER!,
+    from_subaccount: null,
+    fee: BigInt(10000),
   };
 
   // const handleShare = async () => {

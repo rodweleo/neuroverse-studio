@@ -13,8 +13,7 @@ import { useNavigate } from "react-router-dom";
 import fetch from "isomorphic-fetch";
 
 const development = process.env.DFX_NETWORK !== "ic";
-const CANISTER_ID_INTERNET_IDENTITY =
-  process.env.CANISTER_ID_INTERNET_IDENTITY || "uzt4z-lp777-77774-qaabq-cai";
+const CANISTER_ID_INTERNET_IDENTITY = process.env.CANISTER_ID_INTERNET_IDENTITY;
 
 const getIdentityProvider = () => {
   if (typeof window !== "undefined") {
@@ -123,8 +122,10 @@ const useAuthClient = (options = defaultOptions) => {
     try {
       await window.ic.plug.requestConnect({
         whitelist: [
-          "7w546-riaaa-aaaaj-azwja-cai",
-          "64s6e-tyaaa-aaaaj-azwoa-cai",
+          process.env.CANISTER_ID_NEUROVERSE_STUDIO_BACKEND!,
+          process.env.CANISTER_ID_ICRC1_LEDGER_CANISTER!,
+          process.env.CANISTER_ID!,
+          process.env.CANISTER_ID_ICP_LEDGER_CANISTER!,
         ],
         host: "https://mainnet.dfinity.network",
       });
