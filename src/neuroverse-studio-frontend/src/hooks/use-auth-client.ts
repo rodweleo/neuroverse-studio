@@ -19,7 +19,7 @@ const getIdentityProvider = () => {
   if (typeof window !== "undefined") {
     return development
       ? `http://${CANISTER_ID_INTERNET_IDENTITY}.localhost:4943`
-      : "https://identity.ic0.app";
+      : "https://id.ai";
   }
   return undefined;
 };
@@ -52,7 +52,7 @@ const useAuthClient = (options = defaultOptions) => {
   const [whoAmI, setWhoAmI] = useState<string>("");
   const [signInMethod, setSignInMethod] = useState("");
 
-  const host = development ? "http://localhost:4943" : "https://icp0.io";
+  const host = development ? "http://localhost:4943" : "https://id.ai";
 
   useEffect(() => {
     const initAuth = async () => {

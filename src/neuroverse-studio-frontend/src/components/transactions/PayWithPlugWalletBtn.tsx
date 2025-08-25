@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import TokenService from "@/services/TokenService";
 import { toast } from "@/components/ui/sonner";
 import { PlugWalletRequestTransferParams } from "@/utils/types";
+import { useAuth } from "@/contexts/use-auth-client";
 
 interface PayWithPlugWalletBtnProps {
   className?: string;
@@ -11,6 +12,7 @@ interface PayWithPlugWalletBtnProps {
 }
 
 export default function PayWithPlugWalletBtn(props: PayWithPlugWalletBtnProps) {
+  const { agent } = useAuth();
   const { label, className, transferArgs } = props;
 
   const handleTransfer = async () => {
@@ -20,6 +22,10 @@ export default function PayWithPlugWalletBtn(props: PayWithPlugWalletBtnProps) {
           "Please install the Plug extension to smoothly sign transactions.",
       });
       return;
+    }
+
+    if (!agent) {
+      toast.info("Kindly sign in to enable seamless subscription");
     }
 
     if (!transferArgs) {
@@ -39,6 +45,7 @@ export default function PayWithPlugWalletBtn(props: PayWithPlugWalletBtnProps) {
         className
       )}
       onClick={handleTransfer}
+      disabled={!agent}
     >
       {label ? label : "Subscribe Now"}
     </Button>

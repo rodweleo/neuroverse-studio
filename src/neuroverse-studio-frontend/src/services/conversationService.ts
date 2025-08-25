@@ -1,4 +1,4 @@
-import { aiService, type AgentConfig } from "./aiService";
+import { aiService, type AgentConfig } from "./ai.service";
 import { agents } from "@/data/agents";
 
 interface ConversationMemory {

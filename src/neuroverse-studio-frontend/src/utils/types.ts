@@ -1,4 +1,4 @@
-import type { Principal } from "@dfinity/principal";
+import { Principal } from "@dfinity/principal";
 
 export type Tool = {
   id: string;
@@ -14,14 +14,20 @@ export type Tool = {
 };
 
 export type PlugWalletRequestTransferParams = {
-  to: {
-    owner: Principal;
-    subaccount: any[];
-  };
-  canisterId: string;
-  amount: BigInt;
-  fee: BigInt;
+  to: Principal;
+  from: Principal;
+  canisterId?: string;
+  amount: bigint;
+  fee: bigint;
   memo?: number;
   from_subaccount?: string;
   created_at_time?: string;
 };
+
+export type ContractResult<T> =
+  | {
+      ok: T;
+    }
+  | {
+      err: string;
+    };

@@ -28,10 +28,8 @@ const EnhancedAgentCard = ({ agent }: EnhancedAgentCardProps) => {
   );
 
   const transferArgs: PlugWalletRequestTransferParams = {
-    to: {
-      owner: created_by,
-      subaccount: [],
-    },
+    to: created_by,
+    from: fallbackPrincipal,
     amount: BigInt(Number(price) * 100000000),
     canisterId: process.env.CANISTER_ID_ICRC1_LEDGER_CANISTER!,
     from_subaccount: null,

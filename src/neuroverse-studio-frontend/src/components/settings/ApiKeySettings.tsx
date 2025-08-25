@@ -1,19 +1,26 @@
-
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Eye, EyeOff, Key, Zap } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { aiService } from '@/services/aiService';
-import { conversationService } from '@/services/conversationService';
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Eye, EyeOff, Key, Zap } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { aiService } from "@/services/ai.service";
+import { conversationService } from "@/services/conversationService";
 
 const ApiKeySettings = () => {
-  const [apiKey, setApiKey] = useState(aiService.getApiKey() || '');
+  const [apiKey, setApiKey] = useState(aiService.getApiKey() || "");
   const [showApiKey, setShowApiKey] = useState(false);
-  const [useRealAI, setUseRealAI] = useState(conversationService.getUseRealAI());
+  const [useRealAI, setUseRealAI] = useState(
+    conversationService.getUseRealAI()
+  );
   const { toast } = useToast();
 
   const handleSaveApiKey = () => {
@@ -21,7 +28,8 @@ const ApiKeySettings = () => {
       aiService.setApiKey(apiKey.trim());
       toast({
         title: "API Key Saved",
-        description: "Your OpenAI API key has been saved securely in your browser.",
+        description:
+          "Your OpenAI API key has been saved securely in your browser.",
       });
     }
   };
@@ -31,15 +39,15 @@ const ApiKeySettings = () => {
     conversationService.setUseRealAI(enabled);
     toast({
       title: enabled ? "Real AI Enabled" : "Demo Mode Enabled",
-      description: enabled 
-        ? "Conversations will now use real OpenAI API responses." 
+      description: enabled
+        ? "Conversations will now use real OpenAI API responses."
         : "Conversations will use demo responses.",
     });
   };
 
   const handleRemoveApiKey = () => {
-    setApiKey('');
-    aiService.setApiKey('');
+    setApiKey("");
+    aiService.setApiKey("");
     setUseRealAI(false);
     conversationService.setUseRealAI(false);
     toast({
@@ -57,20 +65,27 @@ const ApiKeySettings = () => {
             AI Configuration
           </CardTitle>
           <CardDescription>
-            Configure AI providers and enable real AI responses for enhanced conversations.
+            Configure AI providers and enable real AI responses for enhanced
+            conversations.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <Label className="text-sm font-medium">Use Real AI Responses</Label>
+                <Label className="text-sm font-medium">
+                  Use Real AI Responses
+                </Label>
                 <p className="text-xs text-muted-foreground">
                   Enable real AI responses using OpenAI API (requires API key)
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <Zap className={`h-4 w-4 ${useRealAI ? 'text-acid-green' : 'text-gray-400'}`} />
+                <Zap
+                  className={`h-4 w-4 ${
+                    useRealAI ? "text-acid-green" : "text-gray-400"
+                  }`}
+                />
                 <Switch
                   checked={useRealAI}
                   onCheckedChange={handleToggleRealAI}
@@ -89,7 +104,7 @@ const ApiKeySettings = () => {
                 <div className="relative flex-1">
                   <Input
                     id="openai-key"
-                    type={showApiKey ? 'text' : 'password'}
+                    type={showApiKey ? "text" : "password"}
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
                     placeholder="sk-..."
@@ -114,9 +129,9 @@ const ApiKeySettings = () => {
                 </Button>
               </div>
               {apiKey && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={handleRemoveApiKey}
                   className="border-red-500/20 text-red-400 hover:bg-red-500/10"
                 >
@@ -125,11 +140,11 @@ const ApiKeySettings = () => {
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              Your API key is stored locally in your browser and never sent to our servers.
-              Get your API key from{' '}
-              <a 
-                href="https://platform.openai.com/api-keys" 
-                target="_blank" 
+              Your API key is stored locally in your browser and never sent to
+              our servers. Get your API key from{" "}
+              <a
+                href="https://platform.openai.com/api-keys"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="text-neon-blue hover:underline"
               >
@@ -141,8 +156,9 @@ const ApiKeySettings = () => {
           {!useRealAI && (
             <div className="p-4 bg-neon-purple/10 rounded-lg border border-neon-purple/20">
               <p className="text-sm text-neon-purple">
-                <strong>Demo Mode:</strong> Currently using simulated AI responses. 
-                Add your OpenAI API key and enable real AI for authentic conversations.
+                <strong>Demo Mode:</strong> Currently using simulated AI
+                responses. Add your OpenAI API key and enable real AI for
+                authentic conversations.
               </p>
             </div>
           )}
