@@ -1,5 +1,6 @@
 import { Principal } from "@dfinity/principal";
 import { AccountIdentifier } from "@dfinity/ledger-icp";
+import BigNumber from "bignumber.js";
 
 export const getAccountIdFromPrincipal = (principal: Principal): string => {
   const accountId = AccountIdentifier.fromPrincipal({ principal }).toHex();
@@ -18,6 +19,8 @@ export function formatTimestamp(timestamp: bigint): string {
   });
 }
 
-export function formatTokenAmount(amount: bigint): string {
-  return amount.toString();
+export function formatTokenAmount(rawAmount: bigint, decimals): number {
+  return new BigNumber(rawAmount.toString())
+    .dividedBy(new BigNumber(10).pow(decimals))
+    .toNumber();
 }

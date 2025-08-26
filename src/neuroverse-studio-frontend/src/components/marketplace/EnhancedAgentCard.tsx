@@ -1,60 +1,32 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Eye } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import ChatModal from "@/components/chat/ChatModal";
 import AgentPreview from "./AgentPreview";
 import { Agent } from "../../../../declarations/neuroverse-studio-backend/neuroverse-studio-backend.did";
 import { Badge } from "@/components/ui/badge";
-import PayWithPlugWalletBtn from "@/components/transactions/PayWithPlugWalletBtn";
-import { PlugWalletRequestTransferParams } from "@/utils/types";
 import { useAuth } from "@/contexts/use-auth-client";
-import { getAccountIdFromPrincipal } from "@/utils";
+import SubscriptionDialog from "../agent/subscription/SubscriptionDialog";
+import { useIsUserSubscribedToAgent } from "@/hooks/use-queries";
+import { useNeuroTokenInfo } from "@/hooks/use-neuro-token";
 
 interface EnhancedAgentCardProps {
   agent: Agent;
 }
 
 const EnhancedAgentCard = ({ agent }: EnhancedAgentCardProps) => {
-  const { principal: fallbackPrincipal } = useAuth();
+  const { principal } = useAuth();
+  const { data: isSubscribed, isLoading } = useIsUserSubscribedToAgent(
+    principal,
+    agent.id
+  );
+  const { data: neuroTokenInfo } = useNeuroTokenInfo();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const { toast } = useToast();
+  const { isFree, description, created_by, price } = agent;
 
-  const { isFree, created_by, price } = agent;
-
-  const accountId = getAccountIdFromPrincipal(
-    created_by ? created_by : fallbackPrincipal
-  );
-
-  const transferArgs: PlugWalletRequestTransferParams = {
-    to: created_by,
-    from: fallbackPrincipal,
-    amount: BigInt(Number(price) * 100000000),
-    canisterId: process.env.CANISTER_ID_ICRC1_LEDGER_CANISTER!,
-    from_subaccount: null,
-    fee: BigInt(10000),
-  };
-
-  // const handleShare = async () => {
-  //   if (navigator.share) {
-  //     try {
-  //       await navigator.share({
-  //         title: `${agent.name} - NeuroVerse Agent`,
-  //         text: agent.description,
-  //         url: window.location.href
-  //       });
-  //     } catch (error) {
-  //       // User cancelled sharing
-  //     }
-  //   } else {
-  //     navigator.clipboard.writeText(window.location.href);
-  //     toast({
-  //       title: "Link Copied",
-  //       description: "Agent link has been copied to your clipboard.",
-  //     });
-  //   }
-  // };
+  const canStartConversation =
+    isSubscribed || isFree || created_by?.toString() === principal?.toString();
 
   const handleStartChat = () => {
     setIsPreviewOpen(false);
@@ -75,58 +47,64 @@ const EnhancedAgentCard = ({ agent }: EnhancedAgentCardProps) => {
               </div>
             </div>
 
-            {agent.isFree ? (
+            {isSubscribed ? (
+              <Badge className="text-green-500 bg-green-200/50 border-2 border-green-500 font-semibold">
+                SUBSCRIBED
+              </Badge>
+            ) : agent.isFree ? (
               <Badge>FREE</Badge>
             ) : (
               <div className="flex items-center gap-2 *:text-sm">
                 <h3>Price:</h3>
-                <Badge>{agent.price?.toString()} ICP</Badge>
+                <Badge>
+                  {price?.toString()} {neuroTokenInfo?.symbol}
+                </Badge>
               </div>
             )}
           </div>
 
           <p className="text-muted-foreground flex-grow text-sm leading-relaxed">
-            {agent.description}
+            {description}
           </p>
 
           <div className="flex items-center gap-2 text-sm">
             <h3>Created by:</h3>
-            <p>{agent.created_by?.toString()}</p>
+            <p>
+              {created_by?.toString()} {""}
+              {created_by === principal && "(ME)"}
+            </p>
           </div>
           {/* Action Buttons */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 w-full">
-            <Button
+            {/* <Button
               variant="outline"
               onClick={() => setIsPreviewOpen(true)}
               className="w-full border-neon-blue/30 text-neon-blue hover:bg-neon-blue/10"
             >
               <Eye className="h-4 w-4" />
               Preview Agent
-            </Button>
+            </Button> */}
 
-            <Button
-              onClick={() => setIsModalOpen(true)}
-              className={`w-full font-bold bg-opacity-80 hover:bg-opacity-100 transition-all duration-200`}
-            >
-              Start Conversation <ArrowRight className="h-4 w-4" />
-            </Button>
-
-            {!isFree && (
-              <PayWithPlugWalletBtn
-                className="w-full"
-                transferArgs={transferArgs}
-              />
+            {canStartConversation ? (
+              <Button
+                onClick={() => setIsModalOpen(true)}
+                className={`w-full font-bold bg-opacity-80 hover:bg-opacity-100 transition-all duration-200`}
+              >
+                Start Conversation <ArrowRight className="h-4 w-4" />
+              </Button>
+            ) : (
+              <SubscriptionDialog agent={agent} />
             )}
           </div>
         </div>
       </div>
 
-      <AgentPreview
+      {/* <AgentPreview
         agent={agent}
         isOpen={isPreviewOpen}
         onClose={() => setIsPreviewOpen(false)}
         onStartChat={handleStartChat}
-      />
+      /> */}
 
       <ChatModal
         agent={agent}

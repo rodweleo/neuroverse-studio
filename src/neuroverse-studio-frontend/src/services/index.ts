@@ -1,6 +1,6 @@
-import { useAuth } from "@/contexts/use-auth-client";
 import { NeuroService } from "./neuro.service";
 import { AuthService } from "./auth.service";
+import { Principal } from "@dfinity/principal";
 
 export class ServiceFactory {
   private neuroService?: NeuroService;
@@ -19,18 +19,16 @@ export class ServiceFactory {
     const agent = this.authService.getAgent();
     const identity = this.authService.getIdentity();
 
-    if (!agent) {
-      console.error("Cannot create services without a valid Agent!");
-      return;
-    }
+    // if (!agent) {
+    //   console.error("Cannot create services without a valid Agent!");
+    //   return;
+    // }
 
-    if (identity) {
-      this.neuroService = new NeuroService(
-        process.env.CANISTER_ID_ICRC1_LEDGER_CANISTER!,
-        agent!,
-        identity!
-      );
-    }
+    this.neuroService = new NeuroService(
+      process.env.CANISTER_ID_ICRC1_LEDGER_CANISTER!,
+      agent!,
+      identity!
+    );
   }
 
   getNeuroService(): NeuroService {
@@ -41,14 +39,18 @@ export class ServiceFactory {
   }
 
   async login() {
-    const result = await this.authService.login();
-
+    const result = await this.authService.loginWithIcp();
     this.createAllServices();
     return result;
   }
 
   async logout() {
+    await this.authService.logout();
+
+    // clear the defined service
     this.neuroService = undefined;
+
+    //refresh the created services
     this.createAllServices();
   }
 
@@ -56,7 +58,7 @@ export class ServiceFactory {
     return this.authService.isAuthenticated();
   }
 
-  getPrincipal(): string | undefined {
+  getPrincipal(): Principal {
     return this.authService.getPrincipal();
   }
 }

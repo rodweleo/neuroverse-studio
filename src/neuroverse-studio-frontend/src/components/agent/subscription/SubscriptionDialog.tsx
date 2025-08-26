@@ -1,20 +1,46 @@
-import React, { useState } from "react";
-import { X, Bot, AlertTriangle } from "lucide-react";
+import { useRef, useState } from "react";
+import { Bot, AlertTriangle } from "lucide-react";
 import { Agent } from "../../../../../declarations/neuroverse-studio-backend/neuroverse-studio-backend.did";
 import { useSubscribeToAgent } from "@/hooks/use-queries";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { useNeuroTokenInfo } from "@/hooks/use-neuro-token";
+import { formatTokenAmount } from "@/utils";
+import { useAuth } from "@/contexts/use-auth-client";
+import useAuthModal from "@/hooks/use-auth-modal";
 
 interface SubscriptionDialogProps {
   agent: Agent;
-  onClose: () => void;
+  className?: string;
 }
 
 export default function SubscriptionDialog({
   agent,
-  onClose,
+  className,
 }: SubscriptionDialogProps) {
   const [confirmed, setConfirmed] = useState(false);
+  const { principal } = useAuth();
+  const authModal = useAuthModal();
   const subscribeToAgent = useSubscribeToAgent();
+  const { data: neuroTokenInfo } = useNeuroTokenInfo();
 
+  const dialogCloseRef = useRef<HTMLButtonElement | undefined>();
+
+  const networkFees = neuroTokenInfo
+    ? formatTokenAmount(neuroTokenInfo.fee, neuroTokenInfo.decimals)
+    : 0;
+
+  const totalPrice = (Number(agent.price) + networkFees).toFixed(3);
   const handleSubscribe = async () => {
     if (!confirmed && !agent.isFree) return;
 
@@ -22,9 +48,10 @@ export default function SubscriptionDialog({
       const result = await subscribeToAgent.mutateAsync({
         to: agent.created_by,
         amount: agent.price,
+        agentId: agent.id,
       });
       if (result) {
-        onClose();
+        dialogCloseRef.current?.click();
       } else {
         // Handle subscription failure
         console.error("Subscription failed");
@@ -34,56 +61,76 @@ export default function SubscriptionDialog({
     }
   };
 
+  if (!principal) {
+    return (
+      <Button
+        variant="outline"
+        className={cn(
+          "bg-neon-purple/80 text-white hover:bg-neon-purple font-bold",
+          className
+        )}
+        onClick={() => {
+          authModal.setOpen(true);
+        }}
+      >
+        Subscribe
+      </Button>
+    );
+  }
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-        <div className="flex items-center justify-between p-6 border-b">
-          <h3 className="text-lg font-semibold text-gray-900">
-            Subscribe to {agent.name} agent
-          </h3>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <div className="p-6">
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button
+          variant="outline"
+          className={cn(
+            "bg-neon-purple/80 text-white hover:bg-neon-purple font-bold",
+            className
+          )}
+        >
+          Subscribe
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Subscribe to {agent.name} agent</DialogTitle>
+        </DialogHeader>
+        <div>
           <div className="flex items-center mb-4">
             <div className="bg-blue-100 p-2 rounded-lg mr-3">
               <Bot className="h-6 w-6 text-blue-600" />
             </div>
             <div>
-              <h4 className="font-medium text-gray-900">{agent.name}</h4>
-              <p className="text-sm text-gray-600">{agent.description}</p>
+              <h4 className="font-medium text-white-900">{agent.name}</h4>
+              <p className="text-sm text-gray-500">{agent.description}</p>
             </div>
           </div>
-
           <div className="bg-gray-50 rounded-lg p-4 mb-6">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm text-gray-600">Subscription Cost:</span>
               <span className="font-semibold text-gray-900">
-                {agent.isFree ? "Free" : `${agent.price.toString()} tokens`}
+                {agent.isFree
+                  ? "Free"
+                  : `${agent.price.toString()} ${neuroTokenInfo?.symbol}`}
               </span>
             </div>
             {!agent.isFree && (
               <>
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm text-gray-600">Network Fees:</span>
-                  <span className="text-sm text-gray-900">~0.001 tokens</span>
+                  <span className="text-sm text-gray-900">
+                    ~{networkFees} {neuroTokenInfo?.symbol}
+                  </span>
                 </div>
                 <hr className="my-2" />
                 <div className="flex justify-between items-center">
                   <span className="font-medium text-gray-900">Total:</span>
                   <span className="font-semibold text-gray-900">
-                    ~{(Number(agent.price) + 0.001).toFixed(3)} tokens
+                    ~{totalPrice} {neuroTokenInfo?.symbol}
                   </span>
                 </div>
               </>
             )}
           </div>
-
           {!agent.isFree && (
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
               <div className="flex items-start">
@@ -116,15 +163,16 @@ export default function SubscriptionDialog({
               </label>
             </div>
           )}
-
+        </div>
+        <DialogFooter>
           <div className="flex space-x-3">
-            <button
-              onClick={onClose}
+            <DialogClose
               className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+              ref={dialogCloseRef}
             >
               Cancel
-            </button>
-            <button
+            </DialogClose>
+            <Button
               onClick={handleSubscribe}
               disabled={
                 (!agent.isFree && !confirmed) || subscribeToAgent.isPending
@@ -136,10 +184,10 @@ export default function SubscriptionDialog({
                 : agent.isFree
                 ? "Subscribe"
                 : "Confirm & Pay"}
-            </button>
+            </Button>
           </div>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -14,6 +14,7 @@ import { useAuth } from "@/contexts/use-auth-client";
 import useUserAgents from "@/hooks/useUserAgents";
 import { useAccountTokens } from "@/hooks/use-account-token";
 import { useNeuroTokenInfo } from "@/hooks/use-neuro-token";
+import { useUserTransactions } from "@/hooks/use-queries";
 
 const Dashboard = () => {
   const { principal } = useAuth();
@@ -22,7 +23,7 @@ const Dashboard = () => {
     owner: principal,
   });
   const { data: neuroTokenInfo } = useNeuroTokenInfo();
-
+  const { data: userTransactions } = useUserTransactions(principal);
   return (
     <div className="container py-8 space-y-8">
       <div className="flex justify-between items-end h-60 bg-gradient-to-r from-neon-blue/30 to-neon-purple/30 p-6 rounded-lg shadow-lg">
@@ -68,7 +69,8 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl sm:text-4xl font-bold">
-              {0} {neuroTokenInfo.symbol.toUpperCase()}
+              {userTransactions?.totalDeposits}{" "}
+              {neuroTokenInfo?.symbol.toUpperCase()}
             </div>
           </CardContent>
           <CardFooter>

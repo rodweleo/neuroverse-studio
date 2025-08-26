@@ -161,7 +161,6 @@ const AgentCreationForm = () => {
         createAgentArgs
       );
 
-      console.log(response);
       if ("success" in response) {
         toast.success("Agent deployed cuccessfully!", {
           description: response.success.message,

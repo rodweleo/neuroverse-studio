@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import AuthBtn from "@/components/auth/auth-btn";
 import Navigation from "./Navigation";
 import { useIsMobile } from "@/hooks/use-mobile";
-import SubscriptionToAgentBtn from "../agent/SubscribeToAgentBtn";
 
 const Header = () => {
   const isMobile = useIsMobile();
@@ -18,7 +17,6 @@ const Header = () => {
         <Navigation />
         {!isMobile && (
           <nav className="flex items-center gap-4">
-            <SubscriptionToAgentBtn />
             <Button variant="ghost" asChild>
               <Link to="/deploy">Deploy Your Agent</Link>
             </Button>

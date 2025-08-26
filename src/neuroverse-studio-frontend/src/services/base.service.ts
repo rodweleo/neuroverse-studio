@@ -24,10 +24,6 @@ export abstract class BaseService {
   }
 
   protected createActor<T>(canisterId: string, idlFactory: any): T {
-    if (!this.agent) {
-      throw new Error("Agent not initialized");
-    }
-
     return Actor.createActor<T>(idlFactory, {
       agent: this.agent,
       canisterId,

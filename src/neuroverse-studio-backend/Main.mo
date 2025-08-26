@@ -25,6 +25,11 @@ import TokenHelper "./TokenHelper";
 import Icrc1Ledger "canister:icrc1_ledger_canister";
 import Nat "mo:base/Nat";
 import Result "mo:base/Result";
+import TransactionTypes "./types/transaction.type";
+import TransactionModule "./modules/transaction.module";
+import SubscriptionTypes "./types/subscription.type";
+import SubscriptionModule "./modules/subscription.module";
+import SubscriptionType "types/subscription.type";
 
 persistent actor NeuroVerse {
 
@@ -67,6 +72,16 @@ persistent actor NeuroVerse {
 
   private transient var conversationHistory : HashMap.HashMap<(Principal, Text), [Types.Message]> = HashMap.HashMap<(Principal, Text), [Types.Message]>(10, func((a, b), (c, d)) { a == c and b == d }, func((a, b)) { Principal.hash(a) +% Text.hash(b) });
   private transient var tools = HashMap.HashMap<Text, ToolRegistry.Tool>(32, Text.equal, Text.hash);
+
+  /**
+  * TRANSACTIONS STORAGE
+  */
+  var transactions : [TransactionTypes.Transaction] = [];
+
+  /**
+  * SUBSCRIPTIONS STORAGE
+  */
+  var subscriptions : [SubscriptionTypes.Subscription] = [];
 
   public func promptAI(userInput : Text) : async Text {
     let response = await LLM.chat(
@@ -175,7 +190,7 @@ persistent actor NeuroVerse {
       // REWARD THE USER FOR DEPLOYING AN AGENT SUCCESSFULLY ON NEUROVERSE
 
       let response = await transferNeuro(
-        10000,
+        10_000_000_000,
         {
           owner = createAgentArgs.vendor;
           subaccount = null;
@@ -186,7 +201,7 @@ persistent actor NeuroVerse {
         case (#ok(blockIndex)) {
           #success {
             status = "SUCCESS";
-            message = createAgentArgs.name # " agent deployed and you've been rewarded 10000 NEUROS. Block index: " # Nat.toText(blockIndex);
+            message = createAgentArgs.name # " agent deployed and you've been rewarded 100 NEUROS. Block index: " # Nat.toText(blockIndex);
           };
         };
         case (#err(msg)) {
@@ -595,6 +610,79 @@ persistent actor NeuroVerse {
     return Cycles.balance();
   };
 
+  /**
+  * TRANSACTION FUNCTIONS
+  */
+  // Add a transaction (call this after a successful transfer)
+  public func addTransaction(
+    transactionArgs : TransactionTypes.Transaction
+  ) : async Text {
+    let id = await Helpers.generateUUID();
+    let timestamp = Time.now();
+
+    let tx : TransactionTypes.Transaction = {
+      id = ?id;
+      blockIndex = transactionArgs.blockIndex;
+      amount = transactionArgs.amount;
+      from = transactionArgs.from;
+      to = transactionArgs.to;
+      timestamp = ?timestamp;
+      agentId = null;
+    };
+    transactions := Array.append(transactions, [tx]);
+    id;
+  };
+
+  public query func getUserTransactions(user : Principal) : async [TransactionTypes.Transaction] {
+    TransactionModule.filterUserTransactions(transactions, user);
+  };
+
+  public query func getAllTransactions() : async [TransactionTypes.Transaction] {
+    transactions;
+  };
+
+  /*
+  * SUBSCRIPTIONS FUNCTIONS & METHODS
+  */
+  // Add a subscription
+  public func subscribeToAgent(agentId : Text, user : Principal) : async Text {
+    let timestamp = Time.now();
+
+    if (SubscriptionModule.exists(subscriptions, user, agentId)) {
+      return "Already subscribed";
+    };
+
+    let sub : SubscriptionTypes.Subscription = {
+      subscriber = user;
+      agent_id = agentId;
+      date_of_subscription = timestamp;
+    };
+
+    subscriptions := Array.append(subscriptions, [sub]);
+    "Subscription successful";
+  };
+
+  // Get all subscriptions for the caller
+  public query func getUserSubscriptions(user : Principal) : async [SubscriptionTypes.Subscription] {
+    // let caller = Principal.fromActor(this);
+    SubscriptionModule.getUserAgentSubscriptions(subscriptions, user);
+  };
+
+  // Get all subscriptions for a given agent
+  public query func getAgentSubscriptions(agentId : Text) : async [SubscriptionTypes.Subscription] {
+    SubscriptionModule.getAgentSubscriptions(subscriptions, agentId);
+  };
+
+  // Check if the user is subscribed to an agent
+  public query func isUserSubscribedToAgent(userId : Principal, agentId : Text) : async Bool {
+    SubscriptionModule.isUserSubscribedToAgent(subscriptions, userId, agentId);
+  };
+
+  // Get all subscriptions
+  public query func getAllSubscriptions() : async [SubscriptionType.Subscription] {
+    subscriptions;
+  };
+
   /**PERSISTING STORAGE**/
   system func preupgrade() {
     stableAgents := Iter.toArray(agents.entries());
@@ -607,6 +695,7 @@ persistent actor NeuroVerse {
 
     /**TOOL DATA PERSISTENCE**/
     toolsStable := Iter.toArray(tools.entries());
+
   };
 
   system func postupgrade() {
@@ -633,6 +722,7 @@ persistent actor NeuroVerse {
       tools.put(id, tool);
     };
     toolsStable := [];
+
   }
 
 };

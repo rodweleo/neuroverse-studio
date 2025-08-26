@@ -16,6 +16,8 @@ import {
 import { createAgent } from "@dfinity/utils";
 import { Principal } from "@dfinity/principal";
 import { bigint } from "zod";
+import { useSubscribeToAgent } from "@/hooks/use-queries";
+import { useState } from "react";
 
 interface SubscribeToAgentBtnProps {
   className?: string;
@@ -27,6 +29,8 @@ export default function SubscriptionToAgentBtn(
   props: SubscribeToAgentBtnProps
 ) {
   const { identity, host, principal } = useAuth();
+  const [wantsToSubscribe, setWantsToSubscribe] = useState(false);
+  const subscribeToAgent = useSubscribeToAgent();
   const { label, className, transferArgs } = props;
 
   const handleSubscription = async () => {
