@@ -85,6 +85,7 @@ class TokenService {
       console.log(e);
     }
   }
+  async transferFrom() {}
 }
 
 export default TokenService;

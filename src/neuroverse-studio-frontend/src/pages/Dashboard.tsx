@@ -13,6 +13,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/use-auth-client";
 import useUserAgents from "@/hooks/useUserAgents";
 import { useAccountTokens } from "@/hooks/use-account-token";
+import { useNeuroTokenInfo } from "@/hooks/use-neuro-token";
 
 const Dashboard = () => {
   const { principal } = useAuth();
@@ -20,6 +21,7 @@ const Dashboard = () => {
   const { data: accountTokens } = useAccountTokens({
     owner: principal,
   });
+  const { data: neuroTokenInfo } = useNeuroTokenInfo();
 
   return (
     <div className="container py-8 space-y-8">
@@ -65,7 +67,9 @@ const Dashboard = () => {
             <DollarSign className="h-4 w-4 text-acid-green" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl sm:text-4xl font-bold">{0} ICP</div>
+            <div className="text-2xl sm:text-4xl font-bold">
+              {0} {neuroTokenInfo.symbol.toUpperCase()}
+            </div>
           </CardContent>
           <CardFooter>
             <p className="text-xm sm:text-sm text-muted-foreground">

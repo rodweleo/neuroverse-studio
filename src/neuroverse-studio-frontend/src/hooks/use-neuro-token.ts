@@ -13,10 +13,10 @@ import {
 } from "../../../declarations/icrc1_ledger_canister/icrc1_ledger_canister.did";
 import { toast } from "@/components/ui/sonner";
 
-export function useNeuroTokenBalance(
+export const useNeuroTokenBalance = (
   account: Account,
   enabled: boolean = true
-) {
+) => {
   return useQuery({
     queryKey: ["neuro", "balance", account.owner.toString()],
     queryFn: async () => {
@@ -27,7 +27,7 @@ export function useNeuroTokenBalance(
     staleTime: 1000 * 30, // 30 seconds
     refetchInterval: 1000 * 60, // Refetch every minute
   });
-}
+};
 
 export const useNeuroTokenInfo = () => {
   return useQuery({

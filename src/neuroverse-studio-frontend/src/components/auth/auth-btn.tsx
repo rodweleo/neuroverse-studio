@@ -14,6 +14,7 @@ export default function AuthBtn(props: AuthBtnProps) {
   const authModal = useAuthModal();
   const { isOpen, setOpen } = useAccountModal();
   const { principal, isAuthenticated } = useAuth();
+
   const principalString = principal?.toString();
 
   useEffect(() => {

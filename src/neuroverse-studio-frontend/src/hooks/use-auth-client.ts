@@ -52,7 +52,7 @@ const useAuthClient = (options = defaultOptions) => {
   const [whoAmI, setWhoAmI] = useState<string>("");
   const [signInMethod, setSignInMethod] = useState("");
 
-  const host = development ? "http://localhost:4943" : "https://id.ai";
+  const host = development ? "http://127.0.0.1:4943" : "https://id.ai";
 
   useEffect(() => {
     const initAuth = async () => {
@@ -238,6 +238,7 @@ const useAuthClient = (options = defaultOptions) => {
     accountId,
     whoAmI,
     signInMethod,
+    host,
   };
 };
 
