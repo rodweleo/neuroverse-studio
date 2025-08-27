@@ -1,4 +1,4 @@
-# NeuroVerse
+# Neuroverse
 
 A Decentralized AI agent marketplace built on the Internet Computer Protocol (ICP) that enables users to create, deploy, and monetize AI agents in a fully decentralized environment. Additionally, users are incentivised for each agent created, and the $NEURO tokens earned can be used within the app or help with governance or staking operations.
 
