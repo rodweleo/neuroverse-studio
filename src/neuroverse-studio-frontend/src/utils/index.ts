@@ -24,3 +24,11 @@ export function formatTokenAmount(rawAmount: bigint, decimals): number {
     .dividedBy(new BigNumber(10).pow(decimals))
     .toNumber();
 }
+
+export function toRawTokenAmount(displayAmount, decimals) {
+  return Number(
+    new BigNumber(displayAmount)
+      .multipliedBy(new BigNumber(10).pow(decimals))
+      .toFixed(0)
+  );
+}

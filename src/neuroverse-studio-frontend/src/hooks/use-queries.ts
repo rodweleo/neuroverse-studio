@@ -136,7 +136,9 @@ export function useUserTransactions(user?: Principal) {
       // calculate the amount received as deposits to the user
       const totalDeposits = transactions
         .filter((tx) => {
-          return tx.to === principal;
+          return tx.to
+            .toString()
+            .includes(principal.toString() || user.toString());
         })
         .reduce((sum, tx) => {
           return sum + formatTokenAmount(tx.amount, neuroTokenInfo?.decimals);
@@ -144,7 +146,9 @@ export function useUserTransactions(user?: Principal) {
 
       const totalSpendings = transactions
         .filter((tx) => {
-          return tx.from === principal;
+          return tx.from
+            .toString()
+            .includes(principal.toString() || user.toString());
         })
         .reduce((sum, tx) => {
           return sum + formatTokenAmount(tx.amount, neuroTokenInfo?.decimals);
@@ -158,6 +162,6 @@ export function useUserTransactions(user?: Principal) {
     },
     enabled: !!principal || !!user,
     staleTime: 1000 * 30,
-    refetchInterval: 1000 * 60,
+    refetchInterval: 1000 * 20,
   });
 }

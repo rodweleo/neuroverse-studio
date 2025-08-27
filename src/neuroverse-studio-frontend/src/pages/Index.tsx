@@ -39,7 +39,7 @@ const Index = () => {
               {/* Main Heading */}
               <div className="space-y-6">
                 <h1 className="text-6xl md:text-7xl lg:text-8xl font-orbitron font-bold leading-tight">
-                  <span className="block">NeuroVerse</span>
+                  <span className="block">Neuroverse</span>
                   <span className="block text-white mt-2">AI Agents</span>
                 </h1>
 

@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/use-auth-client";
 import SubscriptionDialog from "../agent/subscription/SubscriptionDialog";
 import { useIsUserSubscribedToAgent } from "@/hooks/use-queries";
 import { useNeuroTokenInfo } from "@/hooks/use-neuro-token";
+import { formatTokenAmount } from "@/utils";
 
 interface EnhancedAgentCardProps {
   agent: Agent;
@@ -57,7 +58,8 @@ const EnhancedAgentCard = ({ agent }: EnhancedAgentCardProps) => {
               <div className="flex items-center gap-2 *:text-sm">
                 <h3>Price:</h3>
                 <Badge>
-                  {price?.toString()} {neuroTokenInfo?.symbol}
+                  {formatTokenAmount(price, neuroTokenInfo?.decimals)}{" "}
+                  {neuroTokenInfo?.symbol}
                 </Badge>
               </div>
             )}

@@ -36,18 +36,28 @@ export default function SubscriptionDialog({
 
   const dialogCloseRef = useRef<HTMLButtonElement | undefined>();
 
+  const formattedPrice = formatTokenAmount(
+    agent.price,
+    neuroTokenInfo?.decimals
+  );
   const networkFees = neuroTokenInfo
-    ? formatTokenAmount(neuroTokenInfo.fee, neuroTokenInfo.decimals)
+    ? formatTokenAmount(neuroTokenInfo?.fee, neuroTokenInfo?.decimals)
     : 0;
 
-  const totalPrice = (Number(agent.price) + networkFees).toFixed(3);
+  const totalPrice =
+    agent.price + (neuroTokenInfo ? neuroTokenInfo.fee : BigInt(0));
+  const formattedTotalPrice = formatTokenAmount(
+    totalPrice,
+    neuroTokenInfo?.decimals
+  );
+
   const handleSubscribe = async () => {
     if (!confirmed && !agent.isFree) return;
 
     try {
       const result = await subscribeToAgent.mutateAsync({
         to: agent.created_by,
-        amount: agent.price,
+        amount: totalPrice,
         agentId: agent.id,
       });
       if (result) {
@@ -110,7 +120,7 @@ export default function SubscriptionDialog({
               <span className="font-semibold text-gray-900">
                 {agent.isFree
                   ? "Free"
-                  : `${agent.price.toString()} ${neuroTokenInfo?.symbol}`}
+                  : `${formattedPrice} ${neuroTokenInfo?.symbol}`}
               </span>
             </div>
             {!agent.isFree && (
@@ -125,7 +135,7 @@ export default function SubscriptionDialog({
                 <div className="flex justify-between items-center">
                   <span className="font-medium text-gray-900">Total:</span>
                   <span className="font-semibold text-gray-900">
-                    ~{totalPrice} {neuroTokenInfo?.symbol}
+                    ~{formattedTotalPrice} {neuroTokenInfo?.symbol}
                   </span>
                 </div>
               </>

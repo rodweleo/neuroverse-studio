@@ -24,6 +24,8 @@ import { useAllTools } from "@/hooks/use-all-tools";
 import { Link } from "react-router-dom";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { CreateAgentArgs } from "../../../../declarations/neuroverse-studio-backend/neuroverse-studio-backend.did";
+import { useNeuroTokenInfo } from "@/hooks/use-neuro-token";
+import { toRawTokenAmount } from "@/utils";
 
 interface AgentFormData {
   name: string;
@@ -45,6 +47,7 @@ interface AgentFormData {
 const AgentCreationForm = () => {
   const { principal, isAuthenticated } = useAuth();
   const { data: availableTools } = useAllTools();
+  const { data: neuroTokenInfo } = useNeuroTokenInfo();
 
   const [formData, setFormData] = useState<AgentFormData>({
     name: "",
@@ -152,7 +155,9 @@ const AgentCreationForm = () => {
         system_prompt: formData.systemPrompt,
         isFree: formData.isFree,
         isPublic: formData.isPublic,
-        price: BigInt(formData.price),
+        price: BigInt(
+          toRawTokenAmount(formData.price, neuroTokenInfo?.decimals)
+        ),
         vendor: principal,
         has_tools: formData.tools.length > 0,
         tools: formData.tools,
@@ -361,7 +366,7 @@ const AgentCreationForm = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="pricing" className="text-lg font-bold">
-                    Price (ICP)
+                    Price ({neuroTokenInfo?.symbol})
                   </Label>
                   <Input
                     id="pricing"

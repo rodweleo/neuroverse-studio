@@ -8,7 +8,14 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Brain, TrendingUp, DollarSign, Users, Plus } from "lucide-react";
+import {
+  Brain,
+  TrendingUp,
+  DollarSign,
+  Users,
+  Plus,
+  Loader2,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/use-auth-client";
 import useUserAgents from "@/hooks/useUserAgents";
@@ -23,7 +30,7 @@ const Dashboard = () => {
     owner: principal,
   });
   const { data: neuroTokenInfo } = useNeuroTokenInfo();
-  const { data: userTransactions } = useUserTransactions(principal);
+  const { data: userTransactions, isLoading } = useUserTransactions(principal);
   return (
     <div className="container py-8 space-y-8">
       <div className="flex justify-between items-end h-60 bg-gradient-to-r from-neon-blue/30 to-neon-purple/30 p-6 rounded-lg shadow-lg">
@@ -68,8 +75,14 @@ const Dashboard = () => {
             <DollarSign className="h-4 w-4 text-acid-green" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl sm:text-4xl font-bold">
-              {userTransactions?.totalDeposits}{" "}
+            <div className="text-2xl sm:text-4xl font-bold flex items-center">
+              {isLoading ? (
+                <Loader2 className="animate-spin" />
+              ) : userTransactions ? (
+                userTransactions.totalDeposits.toString()
+              ) : (
+                0
+              )}{" "}
               {neuroTokenInfo?.symbol.toUpperCase()}
             </div>
           </CardContent>
