@@ -6,6 +6,7 @@ import { IcrcLedgerCanister } from "@dfinity/ledger-icrc";
 import { Principal } from "@dfinity/principal";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNeuroTokenInfo } from "./use-neuro-token";
+import { queryClient } from "@/components/providers";
 
 export function useSubscribeToAgent() {
   const { agent, principal: from } = useAuth();
@@ -66,6 +67,10 @@ export function useSubscribeToAgent() {
     },
     onSuccess: () => {
       toast.success("Successfully subscribed!");
+
+      queryClient.invalidateQueries({
+        queryKey: ["neuroverse-agents"],
+      });
     },
     onError: (error: Error) => {
       toast.error("Error while subscribing!", {

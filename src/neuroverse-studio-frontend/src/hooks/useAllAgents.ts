@@ -6,8 +6,10 @@ const useAllAgents = () => {
     queryKey: ["neuroverse-agents"],
     queryFn: async () => {
       const agents = await getAllAgents();
-      return agents
+      return agents;
     },
+    refetchOnWindowFocus: false,
+    staleTime: 2500,
   });
 };
 
