@@ -31,3 +31,5 @@ export type ContractResult<T> =
   | {
       err: string;
     };
+
+export type TokenTransferStatus = "idle" | "loading" | "success" | "error";

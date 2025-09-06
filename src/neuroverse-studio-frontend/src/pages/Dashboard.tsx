@@ -22,6 +22,7 @@ import useUserAgents from "@/hooks/useUserAgents";
 import { useAccountTokens } from "@/hooks/use-account-token";
 import { useNeuroTokenInfo } from "@/hooks/use-neuro-token";
 import { useUserTransactions } from "@/hooks/use-queries";
+import { TokenTransferModal } from "@/components/account/token-transfer-modal";
 
 const Dashboard = () => {
   const { principal } = useAuth();
@@ -108,7 +109,7 @@ const Dashboard = () => {
               )}
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             {accountTokens && (
               <ul className="bg-gray-800 h-full w-full p-2 rounded-md space-y-4">
                 {accountTokens?.map((token, idx: number) => {
@@ -135,6 +136,20 @@ const Dashboard = () => {
                 })}
               </ul>
             )}
+            <ul className="flex items-center gap-4">
+              <li>
+                <TokenTransferModal
+                  tokens={accountTokens ?? []}
+                  fromAccount={principal?.toString()}
+                />
+              </li>
+              <li>
+                <Button>Receive</Button>
+              </li>
+              <li>
+                <Button>History</Button>
+              </li>
+            </ul>
           </CardContent>
           <CardFooter>
             <p className="text-xm sm:text-sm text-muted-foreground">
