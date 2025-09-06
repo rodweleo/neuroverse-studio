@@ -1,25 +1,34 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Settings as SettingsIcon, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import ApiKeySettings from "@/components/settings/ApiKeySettings";
-import { conversationService } from "@/services/conversationService";
+import { conversationService } from "@/services/conversation.service";
 import { analyticsService } from "@/services/analyticsService";
 
 const Settings = () => {
   const { toast } = useToast();
 
   const handleClearAllData = () => {
-    if (window.confirm('Are you sure you want to clear all data? This will delete all conversations and analytics data.')) {
+    if (
+      window.confirm(
+        "Are you sure you want to clear all data? This will delete all conversations and analytics data."
+      )
+    ) {
       conversationService.clearAllConversations();
       // Clear analytics data
-      localStorage.removeItem('neuroberse_analytics');
+      localStorage.removeItem("neuroberse_analytics");
       toast({
         title: "Data Cleared",
         description: "All conversations and analytics data have been cleared.",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
@@ -41,11 +50,11 @@ const Settings = () => {
           <TabsTrigger value="data">Data Management</TabsTrigger>
           <TabsTrigger value="preferences">Preferences</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="ai" className="space-y-4">
           <ApiKeySettings />
         </TabsContent>
-        
+
         <TabsContent value="data" className="space-y-4">
           <Card className="glassmorphic border-red-500/20">
             <CardHeader>
@@ -61,8 +70,8 @@ const Settings = () => {
               <div className="p-4 bg-red-500/10 rounded-lg border border-red-500/20">
                 <h3 className="font-semibold text-red-400 mb-2">Danger Zone</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  This action will permanently delete all your conversation history and analytics data.
-                  This cannot be undone.
+                  This action will permanently delete all your conversation
+                  history and analytics data. This cannot be undone.
                 </p>
                 <Button
                   variant="destructive"
@@ -76,7 +85,7 @@ const Settings = () => {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="preferences" className="space-y-4">
           <Card className="glassmorphic border-neon-purple/20">
             <CardHeader>

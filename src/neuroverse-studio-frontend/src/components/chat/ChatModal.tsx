@@ -12,10 +12,10 @@ import { Send, LoaderCircle } from "lucide-react";
 import {
   conversationService,
   type ConversationMemory,
-} from "@/services/conversationService";
+} from "@/services/conversation.service";
 import { analyticsService } from "@/services/analyticsService";
 import { useToast } from "@/hooks/use-toast";
-import { Agent } from "../../../../declarations/neuroverse_backend/neuroverse_backend.did";
+import { Agent } from "../../../../declarations/neuroverse-studio-backend/neuroverse-studio-backend.did";
 import MessageBubble from "./MessageBubble";
 import MessageBubbleLoader from "../ui/message-bubble-loader";
 
@@ -97,6 +97,14 @@ const ChatModal = ({ agent, isOpen, setIsOpen }: ChatModalProps) => {
       analyticsService.trackInteraction(agent.id, 1);
     } catch (error) {
       console.error("Chat error:", error);
+      const assistantMessage = {
+        id: Date.now().toString() + "_assistant",
+        role: "assistant" as const,
+        content: typeof error === "string" ? error : error?.message,
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, assistantMessage]);
       toast({
         title: "Error",
         description: "Failed to send message. Please try again.",

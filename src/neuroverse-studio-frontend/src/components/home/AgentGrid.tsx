@@ -27,12 +27,12 @@ const AgentGrid = () => {
           className="border-neon-blue text-neon-blue hover:bg-neon-blue/10"
           asChild
         >
-          <Link to="/marketplace">
+          <Link to="/agent-marketplace">
             View All Agents <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
         </Button>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
         {featuredAgents.length === 0 && (
           <div className="">No live agents found! Apologies partner :|</div>
         )}

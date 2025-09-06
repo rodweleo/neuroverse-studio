@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "../ui/separator";
-import { Tool } from "../../../../declarations/neuroverse_backend/neuroverse_backend.did";
+import { Tool } from "../../../../declarations/neuroverse-studio-backend/neuroverse-studio-backend.did";
 
 interface ToolCardProps {
   tool: Tool;
@@ -45,14 +45,14 @@ const ToolCard: React.FC<ToolCardProps> = ({ tool, onSelect }) => {
   };
 
   return (
-    <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border hover:border-blue-200">
+    <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border hover:border-blue-200 w-full">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between mb-2">
           <div className="flex items-center gap-3">
             {/* <div className="text-2xl">{tool.icon}</div> */}
             <div>
               <CardTitle className="text-lg group-hover:text-blue-600 transition-colors line-clamp-1">
-                {tool.name}
+                {tool.name.toUpperCase()}
               </CardTitle>
             </div>
           </div>

@@ -49,7 +49,7 @@ const EnhancedAgentCard = ({ agent }: EnhancedAgentCardProps) => {
             </div>
 
             {isSubscribed ? (
-              <Badge className="text-green-500 bg-green-200/50 border-2 border-green-500 font-semibold">
+              <Badge className="text-green-500 bg-green-50 border-2 border-green-500 font-semibold">
                 SUBSCRIBED
               </Badge>
             ) : agent.isFree ? (

@@ -8,6 +8,7 @@ import { Rocket, Play, Zap, Users, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import useAllAgentVendors from "@/hooks/useAllAgentVendors";
+import { LoadingAgentsFallback } from "@/components/agent/LoadingAgentsFallback";
 
 // Lazy load heavy components
 const LazyAgentGrid = lazy(() => import("@/components/home/AgentGrid"));
@@ -200,30 +201,7 @@ const Index = () => {
             different tasks and powered by advanced AI models.
           </p>
         </div>
-        <Suspense
-          fallback={
-            <div
-              className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-              role="status"
-              aria-label="Loading AI agents"
-            >
-              {[...Array(6)].map((_, i) => (
-                <div
-                  key={i}
-                  className="glassmorphic border-neon-blue/20 rounded-lg p-6 skeleton"
-                >
-                  <div className="space-y-4">
-                    <div className="w-12 h-12 bg-neon-blue/20 rounded-full"></div>
-                    <div className="h-4 bg-neon-blue/20 rounded w-3/4"></div>
-                    <div className="h-3 bg-neon-blue/10 rounded w-full"></div>
-                    <div className="h-3 bg-neon-blue/10 rounded w-2/3"></div>
-                  </div>
-                </div>
-              ))}
-              <span className="sr-only">Loading AI agents...</span>
-            </div>
-          }
-        >
+        <Suspense fallback={<LoadingAgentsFallback />}>
           <LazyAgentGrid />
         </Suspense>
       </div>

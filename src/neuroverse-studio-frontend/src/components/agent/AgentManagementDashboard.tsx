@@ -1,58 +1,73 @@
-
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Edit, Trash2, Search, Brain, FileText, Calendar, Copy } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import AgentEditForm from './AgentEditForm';
-import { KnowledgeDocument } from './DocumentUpload';
-import { KnowledgeConfig } from './KnowledgeBaseManager';
-import useUserAgents from '@/hooks/useUserAgents';
-import { useAuth } from '@/contexts/use-auth-client';
-import { Agent } from '../../../../declarations/neuroverse_backend/neuroverse_backend.did';
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Edit, Trash2, Search, Brain } from "lucide-react";
+import { toast } from "@/components/ui/sonner";
+import AgentEditForm from "./AgentEditForm";
+import useUserAgents from "@/hooks/useUserAgents";
+import { useAuth } from "@/contexts/use-auth-client";
+import { Agent } from "../../../../declarations/neuroverse-studio-backend/neuroverse-studio-backend.did";
+import { useUserDeleteAgent } from "@/hooks/use-queries";
 
 const AgentManagementDashboard = () => {
-  const { toast } = useToast();
-  const { principal } = useAuth()
-  const { data: userAgents } = useUserAgents(principal)
-  const [searchQuery, setSearchQuery] = useState('');
+  const { principal } = useAuth();
+  const { data: userAgents } = useUserAgents(principal);
+  const deleteAgentMutation = useUserDeleteAgent();
+
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
-  const filteredAgents = userAgents ? userAgents.filter(agent =>
-    agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    agent.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    agent.description.toLowerCase().includes(searchQuery.toLowerCase())
-  ) : [];
+  const filteredAgents = userAgents
+    ? userAgents.filter(
+        (agent) =>
+          agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          agent.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          agent.description.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : [];
 
-  const deleteAgent = (agentId: string) => {
-    toast({
-      title: "Agent Deleted",
+  const deleteAgent = async (agentId: string) => {
+    const response = await deleteAgentMutation.mutateAsync({
+      agentId,
+    });
+    toast.success(response, {
       description: `The agent ${agentId} has been successfully removed.`,
     });
   };
 
   const handleAgentUpdate = (updatedAgent: Agent) => {
-
     setEditDialogOpen(false);
     setSelectedAgent(null);
 
-    toast({
-      title: "Agent Updated",
+    toast.success("Agent Updated", {
       description: `${updatedAgent.name} has been successfully updated.`,
     });
   };
 
   const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     }).format(date);
   };
 
@@ -79,7 +94,8 @@ const AgentManagementDashboard = () => {
             />
           </div>
           <Badge variant="outline" className="text-neon-blue">
-            {userAgents ? userAgents.length : 0} agent{filteredAgents?.length !== 1 ? 's' : ''}
+            {userAgents ? userAgents.length : 0} agent
+            {filteredAgents?.length !== 1 ? "s" : ""}
           </Badge>
         </div>
       </div>
@@ -90,10 +106,12 @@ const AgentManagementDashboard = () => {
             <Brain className="h-16 w-16 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No agents found</h3>
             <p className="text-muted-foreground text-center mb-4">
-              {searchQuery ? 'No agents match your search criteria.' : 'You haven\'t created any agents yet.'}
+              {searchQuery
+                ? "No agents match your search criteria."
+                : "You haven't created any agents yet."}
             </p>
             {!searchQuery && (
-              <Button onClick={() => window.location.href = '/deploy'}>
+              <Button onClick={() => (window.location.href = "/deploy")}>
                 Create Your First Agent
               </Button>
             )}
@@ -102,7 +120,10 @@ const AgentManagementDashboard = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredAgents.map((agent) => (
-            <Card key={agent.id} className="glassmorphic border-neon-blue/20 hover:border-neon-purple/40 transition-colors">
+            <Card
+              key={agent.id}
+              className="glassmorphic border-neon-blue/20 hover:border-neon-purple/40 transition-colors"
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-3">
@@ -124,35 +145,14 @@ const AgentManagementDashboard = () => {
                   {agent.description}
                 </p>
 
-                <div className="grid grid-cols-2 gap-4 text-xs">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-1">
-                      <FileText className="h-3 w-3" />
-                      <span className="text-muted-foreground">Knowledge:</span>
-                    </div>
-                    <span className="font-medium text-neon-blue">
-
-                    </span>
-                  </div>
-
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      <span className="text-muted-foreground">Modified:</span>
-                    </div>
-                    <span className="font-medium">
-                    </span>
-                  </div>
-                </div>
-
                 <div className="flex items-center justify-between pt-2 border-t border-border/50">
-                  <span className="text-xs text-muted-foreground">
-                    v
-                  </span>
+                  <span className="text-xs text-muted-foreground">v</span>
 
                   <div className="flex items-center gap-1">
-
-                    <Dialog open={editDialogOpen && selectedAgent?.id === agent.id} onOpenChange={setEditDialogOpen}>
+                    <Dialog
+                      open={editDialogOpen && selectedAgent?.id === agent.id}
+                      onOpenChange={setEditDialogOpen}
+                    >
                       <DialogTrigger asChild>
                         <Button
                           variant="ghost"

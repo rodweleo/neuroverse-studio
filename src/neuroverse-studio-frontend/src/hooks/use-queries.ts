@@ -71,6 +71,9 @@ export function useSubscribeToAgent() {
       queryClient.invalidateQueries({
         queryKey: ["neuroverse-agents"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["is-user-subscribed-to-agent"],
+      });
     },
     onError: (error: Error) => {
       toast.error("Error while subscribing!", {
@@ -114,6 +117,32 @@ export function useAgentSubscriptions(agentId: string) {
   });
 }
 
+export function useUserDeleteAgent() {
+  return useMutation({
+    mutationFn: async ({ agentId }: { agentId: string }) => {
+      const deleteAgentResponse = await NeuroverseBackendActor.deleteAgent(
+        agentId
+      );
+      return deleteAgentResponse;
+    },
+    onSuccess: () => {
+      toast.success("Agent deleted successfully!");
+
+      queryClient.invalidateQueries({
+        queryKey: ["neuroverse-agents"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["neuroverse-user-agents"],
+      });
+    },
+    onError: (error: Error) => {
+      toast.error("Error while deleting agent!", {
+        description: error.message,
+      });
+    },
+  });
+}
+
 export function useIsUserSubscribedToAgent(userId: Principal, agentId: string) {
   return useQuery({
     queryKey: ["is-user-subscribed-to-agent"],
@@ -123,7 +152,8 @@ export function useIsUserSubscribedToAgent(userId: Principal, agentId: string) {
 
       return isUserSubscribed;
     },
-    enabled: !!userId || !!agentId,
+    staleTime: 1000 * 30,
+    refetchInterval: 1000 * 20,
   });
 }
 
@@ -168,5 +198,32 @@ export function useUserTransactions(user?: Principal) {
     enabled: !!principal || !!user,
     staleTime: 1000 * 30,
     refetchInterval: 1000 * 20,
+  });
+}
+
+/**
+ * TOOL QUERIES
+ */
+
+export function useUserDeleteTool() {
+  return useMutation({
+    mutationFn: async ({ toolId }: { toolId: string }) => {
+      const deleteToolResponse = await NeuroverseBackendActor.deleteTool(
+        toolId
+      );
+      return deleteToolResponse;
+    },
+    onSuccess: () => {
+      toast.success("Tool deleted successfully!");
+
+      queryClient.invalidateQueries({
+        queryKey: ["neuroverse-tools"],
+      });
+    },
+    onError: (error: Error) => {
+      toast.error("Error while deleting tool!", {
+        description: error.message,
+      });
+    },
   });
 }

@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Eye, EyeOff, Key, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { aiService } from "@/services/ai.service";
-import { conversationService } from "@/services/conversationService";
+import { conversationService } from "@/services/conversation.service";
 
 const ApiKeySettings = () => {
   const [apiKey, setApiKey] = useState(aiService.getApiKey() || "");

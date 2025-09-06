@@ -220,6 +220,12 @@ persistent actor NeuroVerse {
 
   };
 
+  // Delete an agent by its Text key
+  public func deleteAgent(agentId : Text) : async Text {
+    agents.delete(agentId);
+    "Agent deleted successfully!";
+  };
+
   public func getAllAgents() : async [Types.Agent] {
     var result : [Types.Agent] = [];
     for ((_, agentMap) in userAgents.entries()) {
@@ -563,6 +569,12 @@ persistent actor NeuroVerse {
   /**TOOL REGISTRY**/
   public func registerTool(tool : ToolRegistry.Tool) : async () {
     tools.put(tool.id, tool);
+  };
+
+  // Delete a tool by its Text key
+  public func deleteTool(toolId : Text) : async Text {
+    tools.delete(toolId);
+    "Tool deleted successfully!";
   };
 
   public func getTools() : async [ToolRegistry.Tool] {

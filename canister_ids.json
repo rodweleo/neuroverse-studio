@@ -1,4 +1,7 @@
 {
+  "icrc1_ledger_canister": {
+    "ic": "7ekdu-syaaa-aaaaj-a2gaq-cai"
+  },
   "neuroverse-studio-backend": {
     "ic": "l4t5c-zaaaa-aaaaj-a2fua-cai"
   },
