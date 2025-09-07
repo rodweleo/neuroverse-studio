@@ -12,9 +12,19 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useNeuroTokenInfo } from "@/hooks/use-neuro-token";
 
-export const PreviewTransactionModal = ({ status, transaction }) => {
+export const PreviewTokenTransferModal = ({
+  status,
+  transaction,
+  onStatusChange,
+}) => {
+  const handleConfirmTokenTransfer = () => {
+    onStatusChange("processing");
+  };
   return (
-    <Dialog open={status === "preview"}>
+    <Dialog
+      open={status === "preview"}
+      // onOpenChange={() => onStatusChange("idle")}
+    >
       <DialogContent className="sm:max-w-md bg-card border-border">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-success">
@@ -32,7 +42,7 @@ export const PreviewTransactionModal = ({ status, transaction }) => {
             <p className="text-md">{transaction?.receipient}</p>
           </div>
           <table className="w-full">
-            <tr className="*:py-2 w-full">
+            <tr className="*:py-1 w-full">
               <td>
                 <p className="text-gray-400 text-sm">Transaction Fee</p>
               </td>
@@ -42,7 +52,7 @@ export const PreviewTransactionModal = ({ status, transaction }) => {
                 </p>
               </td>
             </tr>
-            <tr className="*:py-2  w-full">
+            <tr className="*:py-1 w-full">
               <td>
                 <p className="text-gray-400 text-sm">Amount to Receive</p>
               </td>
@@ -55,9 +65,11 @@ export const PreviewTransactionModal = ({ status, transaction }) => {
           </table>
         </div>
         <DialogFooter className="w-full">
-          <div className="flex items-center justify-between w-full">
-            <DialogClose>Cancel</DialogClose>
-            <Button>Confirm</Button>
+          <div className="flex items-center justify-end w-full gap-4">
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button onClick={handleConfirmTokenTransfer}>Confirm</Button>
           </div>
         </DialogFooter>
       </DialogContent>

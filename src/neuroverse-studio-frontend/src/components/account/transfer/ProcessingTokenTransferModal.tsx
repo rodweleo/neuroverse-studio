@@ -5,9 +5,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-export const ProcessTokenTransactionModal = () => {
+export const ProcessingTokenTransferModal = ({ status }) => {
   return (
-    <Dialog>
+    <Dialog open={status === "processing"}>
       <DialogContent className="sm:max-w-md bg-card border-border">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-success">

@@ -34,7 +34,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { PreviewTransactionModal } from "./transfer/PreviewTransactionModal";
+import { PreviewTokenTransferModal } from "./transfer/PreviewTokenTransferModal";
+import { ProcessingTokenTransferModal } from "./transfer/ProcessingTokenTransferModal";
 
 interface TokenTransferModalProps {
   isOpen?: boolean;
@@ -64,8 +65,12 @@ export const TokenTransferModal = ({
       symbol: z.string(),
       transactionFee: z.string(),
     }),
-    receipient: z.string(),
-    amount: z.string(),
+    receipient: z.string({
+      message: "Receipient Principal ID is required.",
+    }),
+    amount: z
+      .number({ invalid_type_error: "Amount must be a number." })
+      .positive("Amount must be greater than 0."),
     transactionFee: z.string().optional(),
   });
 
@@ -74,16 +79,10 @@ export const TokenTransferModal = ({
     defaultValues: {
       token: tokens[0],
       receipient: "",
-      amount: "0.00",
+      amount: 0,
       transactionFee: tokens[0]?.transactionFee,
     },
   });
-
-  const validatePrincipal = (principal: string): boolean => {
-    // Basic validation for Principal ID format
-    const principalRegex = /^[a-z0-9-]+$/;
-    return principal.length > 10 && principalRegex.test(principal);
-  };
 
   const handleClose = () => {
     setRecipient("");
@@ -105,29 +104,29 @@ export const TokenTransferModal = ({
   const selectedToken = tokenTransferForm.getValues()?.token;
   const transaction = {
     ...tokenTransferForm.getValues(),
-    transactionFee: tokenTransferForm.getValues().token.transactionFee,
+    transactionFee: tokenTransferForm.getValues()?.token?.transactionFee,
     totalAmount: (
-      Number(tokenTransferForm.getValues().token.transactionFee) +
-      Number(tokenTransferForm.getValues().amount)
+      Number(tokenTransferForm.getValues()?.token?.transactionFee) +
+      Number(tokenTransferForm.getValues()?.amount)
     ).toFixed(4),
   };
 
-  const isFormValid =
-    selectedToken &&
-    recipient &&
-    amount &&
-    validatePrincipal(recipient) &&
-    parseFloat(amount) > 0;
-
   function onSubmit(values: z.infer<typeof tokenTransferSchema>) {
     setStatus("preview");
-    console.log(values);
+    // console.log(values);
   }
 
   if (status === "preview") {
     return (
-      <PreviewTransactionModal status={status} transaction={transaction} />
+      <PreviewTokenTransferModal
+        status={status}
+        transaction={transaction}
+        onStatusChange={setStatus}
+      />
     );
+  }
+  if (status === "processing") {
+    return <ProcessingTokenTransferModal status={status} />;
   }
 
   if (status === "success") {
@@ -271,10 +270,13 @@ export const TokenTransferModal = ({
                       <Input
                         type="number"
                         placeholder="0.00"
-                        {...field}
+                        defaultValue={0}
+                        {...tokenTransferForm.register("amount", {
+                          valueAsNumber: true,
+                        })}
                         className="flex-1"
                         min="0"
-                        step="any"
+                        step="0.001"
                       />
                     </FormControl>
                     <FormMessage />
@@ -303,18 +305,15 @@ export const TokenTransferModal = ({
                 variant="outline"
                 onClick={handleClose}
                 className="flex-1"
-                disabled={status === "processing"}
                 type="button"
               >
                 Cancel
               </Button>
-              <Button disabled={status === "processing"} className="flex-1">
-                {status === "processing" && (
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                )}
-                {status === "processing"
-                  ? "Processing..."
-                  : `Send ${tokenTransferForm.getValues()?.token?.symbol}`}
+              <Button
+                disabled={!tokenTransferForm.formState.isValid}
+                className="flex-1"
+              >
+                Send
               </Button>
             </div>
           </form>
