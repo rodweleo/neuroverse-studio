@@ -34,6 +34,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { PreviewTransactionModal } from "./transfer/PreviewTransactionModal";
 
 interface TokenTransferModalProps {
   isOpen?: boolean;
@@ -61,9 +62,11 @@ export const TokenTransferModal = ({
       balance: z.any(),
       formattedBalance: z.number(),
       symbol: z.string(),
+      transactionFee: z.string(),
     }),
     receipient: z.string(),
     amount: z.string(),
+    transactionFee: z.string().optional(),
   });
 
   const tokenTransferForm = useForm<z.infer<typeof tokenTransferSchema>>({
@@ -72,6 +75,7 @@ export const TokenTransferModal = ({
       token: tokens[0],
       receipient: "",
       amount: "0.00",
+      transactionFee: tokens[0]?.transactionFee,
     },
   });
 
@@ -79,60 +83,6 @@ export const TokenTransferModal = ({
     // Basic validation for Principal ID format
     const principalRegex = /^[a-z0-9-]+$/;
     return principal.length > 10 && principalRegex.test(principal);
-  };
-
-  const handleTransfer = async () => {
-    setError("");
-
-    // Validation
-    if (!selectedToken) {
-      setError("Please select a token");
-      return;
-    }
-    if (!recipient) {
-      setError("Please enter recipient address");
-      return;
-    }
-    if (!validatePrincipal(recipient)) {
-      setError("Invalid Principal ID format");
-      return;
-    }
-    if (!amount || parseFloat(amount) <= 0) {
-      setError("Please enter a valid amount");
-      return;
-    }
-    if (
-      selectedToken &&
-      parseFloat(amount) > parseFloat(selectedToken.formattedBalance.toString())
-    ) {
-      toast.error("Insufficient Funds", {
-        description: "Amount exceeds available balance",
-      });
-
-      return;
-    }
-
-    setStatus("loading");
-
-    // Simulate API call
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // Simulate success
-      const mockTxHash = "0x" + Math.random().toString(16).substring(2, 18);
-      setTxHash(mockTxHash);
-      setStatus("success");
-
-      toast("Transfer Successful", {
-        description: `Successfully sent ${amount} ${selectedToken} to ${recipient.substring(
-          0,
-          10
-        )}...`,
-      });
-    } catch (err) {
-      setStatus("error");
-      setError("Transfer failed. Please try again.");
-    }
   };
 
   const handleClose = () => {
@@ -153,6 +103,14 @@ export const TokenTransferModal = ({
   };
 
   const selectedToken = tokenTransferForm.getValues()?.token;
+  const transaction = {
+    ...tokenTransferForm.getValues(),
+    transactionFee: tokenTransferForm.getValues().token.transactionFee,
+    totalAmount: (
+      Number(tokenTransferForm.getValues().token.transactionFee) +
+      Number(tokenTransferForm.getValues().amount)
+    ).toFixed(4),
+  };
 
   const isFormValid =
     selectedToken &&
@@ -162,7 +120,14 @@ export const TokenTransferModal = ({
     parseFloat(amount) > 0;
 
   function onSubmit(values: z.infer<typeof tokenTransferSchema>) {
+    setStatus("preview");
     console.log(values);
+  }
+
+  if (status === "preview") {
+    return (
+      <PreviewTransactionModal status={status} transaction={transaction} />
+    );
   }
 
   if (status === "success") {
@@ -338,59 +303,22 @@ export const TokenTransferModal = ({
                 variant="outline"
                 onClick={handleClose}
                 className="flex-1"
-                disabled={status === "loading"}
+                disabled={status === "processing"}
                 type="button"
               >
                 Cancel
               </Button>
-              <Button
-                onClick={handleTransfer}
-                disabled={!isFormValid || status === "loading"}
-                className="flex-1"
-              >
-                {status === "loading" && (
+              <Button disabled={status === "processing"} className="flex-1">
+                {status === "processing" && (
                   <Loader2 className="w-4 h-4 animate-spin mr-2" />
                 )}
-                {status === "loading"
+                {status === "processing"
                   ? "Processing..."
                   : `Send ${tokenTransferForm.getValues()?.token?.symbol}`}
               </Button>
             </div>
           </form>
         </Form>
-        <div className="space-y-6">
-          {/* Amount */}
-
-          {/* Security Warning */}
-
-          {/* Transaction Preview */}
-          {isFormValid && (
-            <div className="bg-secondary p-4 rounded-lg space-y-2">
-              <h4 className="font-medium">Transaction Summary</h4>
-              <div className="text-sm space-y-1">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Amount:</span>
-                  <span>
-                    {amount} {selectedToken.symbol}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">To:</span>
-                  <span className="font-mono">
-                    {recipient.substring(0, 8)}...
-                    {recipient.substring(recipient.length - 4)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Network Fee:</span>
-                  <span>~0.0001 {selectedToken.symbol}</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Action Buttons */}
-        </div>
       </DialogContent>
     </Dialog>
   );

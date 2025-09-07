@@ -27,3 +27,5 @@ dist/
 .mops
 
 init-token-args.did
+
+test.txt
