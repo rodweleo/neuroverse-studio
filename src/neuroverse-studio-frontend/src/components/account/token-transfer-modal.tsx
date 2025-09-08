@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/form";
 import { PreviewTokenTransferModal } from "./transfer/PreviewTokenTransferModal";
 import { ProcessingTokenTransferModal } from "./transfer/ProcessingTokenTransferModal";
+import { TokenTransferSuccessModal } from "./transfer/TokenTransferSuccessModal";
 
 interface TokenTransferModalProps {
   isOpen?: boolean;
@@ -57,22 +58,27 @@ export const TokenTransferModal = ({
   const [txHash, setTxHash] = useState("");
   const [error, setError] = useState("");
 
-  const tokenTransferSchema = z.object({
-    token: z.object({
-      name: z.string(),
-      balance: z.any(),
-      formattedBalance: z.number(),
-      symbol: z.string(),
-      transactionFee: z.string(),
-    }),
-    receipient: z.string({
-      message: "Receipient Principal ID is required.",
-    }),
-    amount: z
-      .number({ invalid_type_error: "Amount must be a number." })
-      .positive("Amount must be greater than 0."),
-    transactionFee: z.string().optional(),
-  });
+  const tokenTransferSchema = z
+    .object({
+      token: z.object({
+        name: z.string(),
+        balance: z.any(),
+        formattedBalance: z.number(),
+        symbol: z.string(),
+        transactionFee: z.string(),
+      }),
+      receipient: z.string({
+        message: "Receipient Principal ID is required.",
+      }),
+      amount: z
+        .number({ invalid_type_error: "Amount must be a number." })
+        .positive("Amount must be greater than 0."),
+      transactionFee: z.string().optional(),
+    })
+    .refine((data) => data.amount <= data.token.balance, {
+      message: "Amount cannot exceed account balance.",
+      path: ["amount"],
+    });
 
   const tokenTransferForm = useForm<z.infer<typeof tokenTransferSchema>>({
     resolver: zodResolver(tokenTransferSchema),
@@ -94,13 +100,6 @@ export const TokenTransferModal = ({
     onClose();
   };
 
-  const copyTxHash = () => {
-    navigator.clipboard.writeText(txHash);
-    toast("Copied!", {
-      description: "Transaction hash copied to clipboard",
-    });
-  };
-
   const selectedToken = tokenTransferForm.getValues()?.token;
   const transaction = {
     ...tokenTransferForm.getValues(),
@@ -115,7 +114,6 @@ export const TokenTransferModal = ({
     setStatus("preview");
     // console.log(values);
   }
-
   if (status === "preview") {
     return (
       <PreviewTokenTransferModal
@@ -126,62 +124,23 @@ export const TokenTransferModal = ({
     );
   }
   if (status === "processing") {
-    return <ProcessingTokenTransferModal status={status} />;
+    return (
+      <ProcessingTokenTransferModal
+        status={status}
+        transaction={transaction}
+        onStatusChange={setStatus}
+      />
+    );
   }
 
   if (status === "success") {
     return (
-      <Dialog>
-        <DialogContent className="sm:max-w-md bg-card border-border">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-success">
-              <CheckCircle className="w-5 h-5" />
-              Transfer Successful
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div className="text-center py-6">
-              <div className="text-2xl font-bold text-foreground mb-2">
-                {amount} {selectedToken.symbol}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                Sent to {recipient.substring(0, 10)}...
-                {recipient.substring(recipient.length - 6)}
-              </div>
-            </div>
-
-            <div className="bg-secondary p-4 rounded-lg">
-              <Label className="text-sm font-medium">Transaction Hash</Label>
-              <div className="flex items-center gap-2 mt-1">
-                <code className="text-xs font-mono bg-background px-2 py-1 rounded flex-1">
-                  {txHash}
-                </code>
-                <Button size="icon" variant="ghost" onClick={copyTxHash}>
-                  <Copy className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={handleClose}
-                className="flex-1"
-              >
-                Close
-              </Button>
-              <Button
-                variant="default"
-                onClick={handleClose}
-                className="flex-1"
-              >
-                New Transfer
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <TokenTransferSuccessModal
+        status={status}
+        transaction={transaction}
+        onStatusChange={setStatus}
+        form={tokenTransferForm}
+      />
     );
   }
 
@@ -276,7 +235,7 @@ export const TokenTransferModal = ({
                         })}
                         className="flex-1"
                         min="0"
-                        step="0.001"
+                        step="0.00001"
                       />
                     </FormControl>
                     <FormMessage />
