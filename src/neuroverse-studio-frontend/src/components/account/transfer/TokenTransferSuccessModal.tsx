@@ -47,7 +47,7 @@ export const TokenTransferSuccessModal = ({
               to <span className="font-bold">{transaction?.receipient}</span>
             </p>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 hidden">
             <Label className="text-slate-300">Transaction Hash</Label>
             <div className="flex items-center justify-between border border-neon-purple/50 rounded-md p-2">
               <p>Hello world</p>

@@ -4,16 +4,37 @@ import {
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useUserTokenTransfer } from "@/hooks/use-queries";
 import { Loader } from "lucide-react";
+import { useEffect } from "react";
 
 export const ProcessingTokenTransferModal = ({
   status,
   transaction,
   onStatusChange,
 }) => {
-  setTimeout(() => {
-    onStatusChange("success");
-  }, 5000);
+  const userTransferTokenMutation = useUserTokenTransfer();
+
+  useEffect(() => {
+    if (transaction) {
+      userTransferTokenMutation
+        .mutateAsync({
+          amount: transaction?.totalAmount,
+          to: transaction?.receipient,
+        })
+        .then((res) => {
+          console.log(res);
+          onStatusChange("success");
+          return;
+        })
+        .catch((e) => {
+          console.log(e);
+          onStatusChange("idle");
+          return;
+        });
+    }
+  }, [transaction]);
+
   return (
     <Dialog open={status === "processing"}>
       <DialogContent className="sm:max-w-md bg-card border-border">

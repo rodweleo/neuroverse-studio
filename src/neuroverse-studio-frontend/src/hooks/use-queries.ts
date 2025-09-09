@@ -227,3 +227,55 @@ export function useUserDeleteTool() {
     },
   });
 }
+
+export function useUserTokenTransfer() {
+  const { agent, principal: from } = useAuth();
+
+  return useMutation({
+    mutationFn: async ({
+      amount,
+      to,
+    }: {
+      amount: number;
+      to: string | Principal;
+    }) => {
+      if (!agent) throw new Error("HTTP Agent is not available");
+
+      const formattedTo = typeof to === "string" ? Principal.fromText(to) : to;
+
+      const ledger = IcrcLedgerCanister.create({
+        agent,
+        canisterId: Principal.fromText(
+          process.env.CANISTER_ID_ICRC1_LEDGER_CANISTER!
+        ),
+      });
+
+      if (process.env.DFX_NETWORK === "local") {
+        await agent.fetchRootKey();
+      }
+
+      const blockIndex = await ledger.transfer({
+        to: {
+          owner: formattedTo,
+          subaccount: [],
+        },
+        amount: BigInt(Math.floor(amount * 10 ** 8)),
+        // fee, memo, created_at_time can be added as needed
+      });
+
+      return blockIndex;
+    },
+    onSuccess: () => {
+      toast.success(`Token transfer was successfully to ${from.toString()}!`);
+
+      queryClient.invalidateQueries({
+        queryKey: ["neuroverse-user-tokens"],
+      });
+    },
+    onError: (error: Error) => {
+      toast.error("Error processing transaction: ", {
+        description: error.message,
+      });
+    },
+  });
+}

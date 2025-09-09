@@ -104,10 +104,10 @@ export const TokenTransferModal = ({
   const transaction = {
     ...tokenTransferForm.getValues(),
     transactionFee: tokenTransferForm.getValues()?.token?.transactionFee,
-    totalAmount: (
+    totalAmount: Number((
       Number(tokenTransferForm.getValues()?.token?.transactionFee) +
       Number(tokenTransferForm.getValues()?.amount)
-    ).toFixed(4),
+    ).toFixed(4)),
   };
 
   function onSubmit(values: z.infer<typeof tokenTransferSchema>) {
