@@ -28,16 +28,33 @@ export default function AuthBtn(props: AuthBtnProps) {
 
   if (!isAuthenticated) {
     return (
-      <Button
-        type="button"
-        className={cn(
-          "bg-neon-purple/80 text-white hover:bg-neon-purple font-bold",
-          className
-        )}
-        onClick={() => authModal.setOpen(true)}
-      >
-        Login / Create Neuro Account
-      </Button>
+      <ul className="flex items-center gap-2 *:w-full">
+        <li>
+          <Button
+            type="button"
+            variant="outline"
+            className={cn(
+              " border border-neon-purple text-white hover:bg-neon-purple font-bold",
+              className
+            )}
+            onClick={() => authModal.setOpen(true)}
+          >
+            Login
+          </Button>
+        </li>
+        <li>
+          <Button
+            type="button"
+            className={cn(
+              "bg-neon-purple/80 text-white hover:bg-neon-purple font-bold",
+              className
+            )}
+            onClick={() => authModal.setOpen(true)}
+          >
+            Sign up
+          </Button>
+        </li>
+      </ul>
     );
   }
   return (

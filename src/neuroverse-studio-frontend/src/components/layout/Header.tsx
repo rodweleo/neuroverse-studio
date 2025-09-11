@@ -11,7 +11,7 @@ const Header = () => {
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
           <span className="font-orbitron text-xl font-bold holographic-text">
-            NeuroVerse
+            Neuroverse
           </span>
         </Link>
         <Navigation />

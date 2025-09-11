@@ -26,9 +26,9 @@ const Index = () => {
       {/* Immersive Hero Section */}
       <div className="relative min-h-screen flex items-center justify-center overflow-hidden rounded-lg  ">
         <div className="relative z-10 container">
-          <div className="grid xl:grid-cols-2 gap-12 items-center">
+          <div className="gap-12 items-center">
             {/* Left Content */}
-            <div className="space-y-8 lg:pr-8">
+            <div className="space-y-8 lg:pr-8 grid place-items-center w-full text-center">
               {/* Badge */}
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glassmorphic border border-neon-blue/30">
                 <Zap className="h-4 w-4 text-neon-blue animate-pulse" />
@@ -38,13 +38,14 @@ const Index = () => {
               </div>
 
               {/* Main Heading */}
-              <div className="space-y-6">
-                <h1 className="text-6xl md:text-7xl lg:text-8xl font-orbitron font-bold leading-tight">
-                  <span className="block">Neuroverse</span>
-                  <span className="block text-white mt-2">AI Agents</span>
+              <div className="space-y-6 grid place-items-center">
+                <h1 className="text-2xl md:text-4xl lg:text-7xl font-orbitron font-bold leading-tight">
+                  <span className="block">
+                    BUILD, LAUNCH, SCALE & MONETIZE AI AGENTS
+                  </span>
                 </h1>
 
-                <p className="text-lg lg:text-xl text-muted-foreground max-w-2xl leading-relaxed">
+                <p className="text-md lg:text-lg text-muted-foreground leading-relaxed max-w-2xl sm:max-w-3xl">
                   Explore a decentralized universe of AI agents. Interact with
                   them, deploy your own, and shape the future of intelligence on
                   the blockchain.
@@ -89,7 +90,7 @@ const Index = () => {
                 </div>
                 <div className="flex items-center space-x-2 text-muted-foreground">
                   <div className="w-2 h-2 bg-neon-blue rounded-full animate-pulse"></div>
-                  <span>Earn ICP Tokens</span>
+                  <span>Earn $NEURO Tokens</span>
                 </div>
                 <div className="flex items-center space-x-2 text-muted-foreground">
                   <div className="w-2 h-2 bg-neon-purple rounded-full animate-pulse"></div>
@@ -130,7 +131,7 @@ const Index = () => {
             </div>
 
             {/* Right Content - 3D Robot */}
-            <div className=" hidden relative lg:h-[700px] h-[500px] xl:flex items-center justify-center">
+            <div className=" hidden relative lg:h-[700px] h-[500px] items-center justify-center">
               <div
                 className="absolute inset-0 bg-gradient-to-r from-neon-blue/10 via-neon-purple/10 to-acid-green/10 rounded-full blur-3xl animate-pulse"
                 aria-hidden="true"
@@ -143,28 +144,9 @@ const Index = () => {
                 <img
                   src="/logo.png"
                   alt="NeuroVerse"
-                  className="size-xl rounded-full absolute left-20 top-20 select-none"
+                  className="hidden size-xl rounded-full absolute left-20 top-20 select-none"
                 />
                 <HolographicRobot3D />
-              </div>
-
-              {/* Floating UI Elements */}
-              <div className="absolute top-10 right-10 glassmorphic border border-neon-blue/30 rounded-lg p-3 backdrop-blur-md">
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-acid-green rounded-full animate-pulse"></div>
-                  <span className="text-xs text-muted-foreground">
-                    AI Online
-                  </span>
-                </div>
-              </div>
-
-              <div className="absolute bottom-10 left-10 glassmorphic border border-neon-purple/30 rounded-lg p-3 backdrop-blur-md">
-                <div className="flex items-center space-x-2">
-                  <Shield className="h-4 w-4 text-neon-purple" />
-                  <span className="text-xs text-muted-foreground">
-                    Blockchain Secured
-                  </span>
-                </div>
               </div>
             </div>
           </div>

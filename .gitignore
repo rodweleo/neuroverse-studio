@@ -27,5 +27,9 @@ dist/
 .mops
 
 init-token-args.did
+icp_ledger_canister.did
+icp_ledger_canister.wasm.gz
 
 test.txt
+
+
