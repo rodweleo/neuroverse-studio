@@ -39,9 +39,9 @@ const Index = () => {
 
               {/* Main Heading */}
               <div className="space-y-6 grid place-items-center">
-                <h1 className="text-2xl md:text-4xl lg:text-7xl font-orbitron font-bold leading-tight">
+                <h1 className="text-2xl md:text-4xl lg:text-7xl xl:text-8xl font-orbitron font-bold leading-tight">
                   <span className="block">
-                    BUILD, LAUNCH, SCALE & MONETIZE AI AGENTS
+                    BUILD, LAUNCH, & MONETIZE AI AGENTS
                   </span>
                 </h1>
 

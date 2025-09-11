@@ -38,3 +38,46 @@ export type TokenTransferStatus =
   | "processing"
   | "success"
   | "error";
+
+// Types matching the Motoko backend
+export type Document = {
+  id: string;
+  filename: string;
+  content_type: string;
+  encrypted_data: Uint8Array;
+  owner: Principal;
+  whitelist: Principal[];
+  created_at: bigint;
+  updated_at: bigint;
+  size: bigint;
+};
+
+export type DocumentInfo = {
+  id: string;
+  filename: string;
+  content_type: string;
+  owner: Principal;
+  whitelist: Principal[];
+  created_at: bigint;
+  updated_at: bigint;
+  size: bigint;
+  can_access: boolean;
+};
+
+export type CreateDocumentRequest = {
+  filename: string;
+  content_type: string;
+  encrypted_data: Uint8Array;
+  whitelist: Principal[];
+};
+
+export type UpdateWhitelistRequest = {
+  document_id: string;
+  whitelist: Principal[];
+};
+
+export type UploadProgress = {
+  loaded: number;
+  total: number;
+  percentage: number;
+};

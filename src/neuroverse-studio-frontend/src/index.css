@@ -3,6 +3,10 @@
 @tailwind components;
 @tailwind utilities;
 
+*{
+  font-family: 'Inter';
+  letter-spacing: 1.5px;
+}
 @layer base {
   :root {
     --background: 224 71% 4%;

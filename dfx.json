@@ -30,7 +30,8 @@
     "neuroverse-studio-backend": {
       "dependencies": ["llm", "icrc1_ledger_canister"],
       "main": "src/neuroverse-studio-backend/Main.mo",
-      "type": "motoko"
+      "type": "motoko",
+      "optimize": "cycles"
     },
     "neuroverse-studio-frontend": {
       "dependencies": ["neuroverse-studio-backend"],
