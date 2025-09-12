@@ -39,13 +39,13 @@ const Index = () => {
 
               {/* Main Heading */}
               <div className="space-y-6 grid place-items-center">
-                <h1 className="text-2xl md:text-4xl lg:text-7xl xl:text-8xl font-orbitron font-bold leading-tight">
+                <h1 className="text-2xl md:text-4xl lg:text-6xl xl:text-7xl font-orbitron font-bold leading-wide">
                   <span className="block">
-                    BUILD, LAUNCH, & MONETIZE AI AGENTS
+                    BUILD, LAUNCH, & MONETIZE AI AGENTS ON-CHAIN
                   </span>
                 </h1>
 
-                <p className="text-md lg:text-lg text-muted-foreground leading-relaxed max-w-2xl sm:max-w-3xl">
+                <p className="text-sm lg:text-md lg:text-lg text-muted-foreground leading-relaxed max-w-2xl sm:max-w-3xl">
                   Explore a decentralized universe of AI agents. Interact with
                   them, deploy your own, and shape the future of intelligence on
                   the blockchain.
