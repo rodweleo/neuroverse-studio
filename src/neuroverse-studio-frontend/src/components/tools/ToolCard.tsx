@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "../ui/separator";
 import { Tool } from "../../../../declarations/neuroverse-studio-backend/neuroverse-studio-backend.did";
+import { formatTokenAmount } from "@/utils";
 
 interface ToolCardProps {
   tool: Tool;
@@ -24,8 +25,6 @@ const ToolCard: React.FC<ToolCardProps> = ({ tool, onSelect }) => {
         return "bg-green-100 text-green-800 border-green-200";
       case "premium":
         return "bg-blue-100 text-blue-800 border-blue-200";
-      case "token-gated":
-        return "bg-purple-100 text-purple-800 border-purple-200";
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
     }
@@ -43,6 +42,8 @@ const ToolCard: React.FC<ToolCardProps> = ({ tool, onSelect }) => {
         return "🔧";
     }
   };
+
+  const formatedToolPrice = formatTokenAmount(tool.price, tool.decimals);
 
   return (
     <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border hover:border-blue-200 w-full">
@@ -80,8 +81,7 @@ const ToolCard: React.FC<ToolCardProps> = ({ tool, onSelect }) => {
           <div className="flex items-center gap-2">
             {tool.tool_type !== "free" ? (
               <div className="flex items-center gap-1 text-lg font-semibold">
-                {Number(tool.price).toPrecision(Number(tool.decimals))}{" "}
-                {tool.currency}
+                {formatedToolPrice} {tool.currency}
               </div>
             ) : (
               <div className="text-lg font-semibold text-green-600">FREE</div>

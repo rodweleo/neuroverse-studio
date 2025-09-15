@@ -19,16 +19,35 @@ export function formatTimestamp(timestamp: bigint): string {
   });
 }
 
-export function formatTokenAmount(rawAmount: bigint, decimals): number {
+export function formatTokenAmount(
+  rawAmount: bigint,
+  decimals: bigint | number
+): string {
   return new BigNumber(rawAmount.toString())
     .dividedBy(new BigNumber(10).pow(decimals))
-    .toNumber();
+    .toFixed(typeof decimals === "bigint" ? Number(decimals) : decimals);
 }
 
-export function toRawTokenAmount(displayAmount, decimals) {
+export function toRawTokenAmount(
+  displayAmount: bigint | number,
+  decimals: bigint | number
+) {
   return Number(
     new BigNumber(displayAmount)
-      .multipliedBy(new BigNumber(10).pow(decimals))
+      .multipliedBy(
+        new BigNumber(10).pow(
+          typeof decimals === "bigint" ? Number(decimals) : decimals
+        )
+      )
       .toFixed(0)
+  );
+}
+
+export function formatPrincipal(principal: Principal) {
+  const principalString = principal.toString();
+  return (
+    principalString.slice(0, 8) +
+    "..." +
+    principalString.slice(principalString.length - 8, principalString.length)
   );
 }

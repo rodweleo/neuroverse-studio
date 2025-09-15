@@ -7,6 +7,10 @@ import { Principal } from "@dfinity/principal";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNeuroTokenInfo } from "./use-neuro-token";
 import { queryClient } from "@/components/providers";
+import {
+  CreateAgentArgs,
+  CreateAgentResponse,
+} from "../../../declarations/neuroverse-studio-backend/neuroverse-studio-backend.did";
 
 export function useSubscribeToAgent() {
   const { agent, principal: from } = useAuth();
@@ -173,20 +177,24 @@ export function useUserTransactions(user?: Principal) {
         .filter((tx) => {
           return tx.to
             .toString()
-            .includes(principal.toString() || user.toString());
+            .includes(principal.toString() || user?.toString());
         })
         .reduce((sum, tx) => {
-          return sum + formatTokenAmount(tx.amount, neuroTokenInfo?.decimals);
+          return (
+            sum + Number(formatTokenAmount(tx.amount, neuroTokenInfo?.decimals))
+          );
         }, 0);
 
       const totalSpendings = transactions
         .filter((tx) => {
           return tx.from
             .toString()
-            .includes(principal.toString() || user.toString());
+            .includes(principal.toString() || user?.toString());
         })
         .reduce((sum, tx) => {
-          return sum + formatTokenAmount(tx.amount, neuroTokenInfo?.decimals);
+          return (
+            sum + Number(formatTokenAmount(tx.amount, neuroTokenInfo?.decimals))
+          );
         }, 0);
 
       return {
@@ -274,6 +282,48 @@ export function useUserTokenTransfer() {
     },
     onError: (error: Error) => {
       toast.error("Error processing transaction: ", {
+        description: error.message,
+      });
+    },
+  });
+}
+
+export function useDeployAgent() {
+  const { agent, principal: from } = useAuth();
+
+  return useMutation({
+    mutationFn: async (createAgentArgs: CreateAgentArgs) => {
+      if (!agent) throw new Error("HTTP Agent is not available");
+
+      const response = await NeuroverseBackendActor.createAgent(
+        createAgentArgs
+      );
+
+      if ("success" in response) {
+        toast.success("Agent deployed cuccessfully!", {
+          description: response.success.message,
+        });
+      } else if ("failed" in response) {
+        toast.error("Failed to deploy agent!", {
+          description: response.failed.message,
+        });
+      }
+
+      return response;
+    },
+    onSuccess: (data: CreateAgentResponse) => {
+      if ("success" in data) {
+        toast.success(`Agent deployed successfully!`, {
+          description: data.success.message,
+        });
+
+        queryClient.invalidateQueries({
+          queryKey: ["neuroverse-agents"],
+        });
+      }
+    },
+    onError: (error: Error) => {
+      toast.error("Error deploying agent: ", {
         description: error.message,
       });
     },

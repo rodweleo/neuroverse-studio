@@ -15,7 +15,6 @@ import { Rocket, Settings, FileText, Puzzle, ALargeSmall } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import KnowledgeBaseManager, { KnowledgeConfig } from "./KnowledgeBaseManager";
 import { KnowledgeDocument } from "./DocumentUpload";
-import NeuroverseBackendActor from "@/utils/NeuroverseBackendActor";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/use-auth-client";
@@ -23,9 +22,17 @@ import AuthBtn from "@/components/auth/auth-btn";
 import { useAllTools } from "@/hooks/use-all-tools";
 import { Link } from "react-router-dom";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { CreateAgentArgs } from "../../../../declarations/neuroverse-studio-backend/neuroverse-studio-backend.did";
+import {
+  CreateAgentArgs,
+  Tool,
+} from "../../../../declarations/neuroverse-studio-backend/neuroverse-studio-backend.did";
 import { useNeuroTokenInfo } from "@/hooks/use-neuro-token";
 import { toRawTokenAmount } from "@/utils";
+import { useDeployAgent } from "@/hooks/use-queries";
+import { Badge } from "@/components/ui/badge";
+import useUserAgents from "@/hooks/useUserAgents";
+import { useAccountTokens } from "@/hooks/use-account-token";
+import DeployAgentPaymentModal from "./DeployAgentPaymentModal";
 
 interface AgentFormData {
   name: string;
@@ -37,7 +44,7 @@ interface AgentFormData {
   price: number;
   isPublic: boolean;
   isFree: boolean;
-  tools: string[];
+  tools: Tool[];
   temperature: number;
   maxTokens: number;
   knowledgeBase: KnowledgeDocument[];
@@ -48,7 +55,9 @@ const AgentCreationForm = () => {
   const { principal, isAuthenticated } = useAuth();
   const { data: availableTools } = useAllTools();
   const { data: neuroTokenInfo } = useNeuroTokenInfo();
-
+  const { data: deployedUserAgents } = useUserAgents(principal);
+  const { data: userTokenBalance } = useAccountTokens({ owner: principal });
+  const deployAgentMutation = useDeployAgent();
   const [formData, setFormData] = useState<AgentFormData>({
     name: "",
     description: "",
@@ -73,6 +82,15 @@ const AgentCreationForm = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [toolSearchQuery, setToolSearchQuery] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalProps, setModalProps] = useState({
+    selectedTools: [],
+    currentBalance: userTokenBalance ? userTokenBalance[0].formattedBalance : 0,
+    isFirstTimeDeployer: deployedUserAgents?.length === 0 ? true : false,
+    tokenSymbol: "NEURO",
+    agentName: formData.name,
+    welcomeBonus: 100,
+  });
 
   const roleTemplates = [
     {
@@ -160,11 +178,23 @@ const AgentCreationForm = () => {
         ),
         vendor: principal,
         has_tools: formData.tools.length > 0,
-        tools: formData.tools,
+        tools: formData.tools.map((t) => t.id.toString()),
       };
-      const response = await NeuroverseBackendActor.createAgent(
-        createAgentArgs
-      );
+
+      //check if the agents has any premium tools to charge
+      const premiumTools = formData.tools.filter((t) => Number(t.price) > 0);
+
+      if (premiumTools.length > 0) {
+        console.log("Premium tools found");
+        setModalProps({
+          ...modalProps,
+          selectedTools: premiumTools,
+        });
+        setIsModalOpen(true);
+        return;
+      }
+
+      let response = await deployAgentMutation.mutateAsync(createAgentArgs);
 
       if ("success" in response) {
         toast.success("Agent deployed cuccessfully!", {
@@ -222,6 +252,9 @@ const AgentCreationForm = () => {
     setToolSearchQuery(e.target.value);
   };
 
+  const handleConfirmPayment = async () => {
+    console.log("Handling final deployment");
+  };
   return (
     <div className="space-y-8 ">
       {/* Agent Creation Form */}
@@ -456,20 +489,18 @@ const AgentCreationForm = () => {
                       >
                         <div key={tool.id} className="flex items-center gap-4">
                           <Checkbox
-                            checked={formData.tools.includes(
-                              tool.id.toString()
-                            )}
+                            checked={formData.tools.includes(tool)}
                             onCheckedChange={(checked) => {
                               if (checked) {
                                 setFormData((prev) => ({
                                   ...prev,
-                                  tools: [...prev.tools, tool.id.toString()],
+                                  tools: [...prev.tools, tool],
                                 }));
                               } else {
                                 setFormData((prev) => ({
                                   ...prev,
                                   tools: prev.tools.filter(
-                                    (value) => value !== tool.id.toString()
+                                    (value) => value.id !== tool.id.toString()
                                   ),
                                 }));
                               }
@@ -483,9 +514,10 @@ const AgentCreationForm = () => {
                               >
                                 {tool.name}
                               </Label>
-                              <p className="text-muted-foreground">
-                                {tool.tool_type}
-                              </p>
+                              <Badge>
+                                {tool.price > 0 ? Number(tool.price) : "FREE"}{" "}
+                                {tool.currency}
+                              </Badge>
                             </div>
                             <p className="text-sm text-muted-foreground">
                               {tool.description}
@@ -556,6 +588,13 @@ const AgentCreationForm = () => {
           </div>
         </CardContent>
       </Card>
+
+      <DeployAgentPaymentModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={handleConfirmPayment}
+        {...modalProps}
+      />
     </div>
   );
 };

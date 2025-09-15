@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 export default function CallToAction() {
   return (
-    <section className="relative mx-auto max-w-6xl w-full py-20 grid place-items-center bg-black text-center overflow-hidden rounded-xl">
+    <section className="relative mx-auto lg:max-w-6xl w-full py-20 grid place-items-center bg-black text-center overflow-hidden rounded-xl">
       <Aurora
         colorStops={["#3A29FF", "#FF94B4", "#FF3232"]}
         blend={1}
@@ -61,7 +61,7 @@ export default function CallToAction() {
         blend={1}
         amplitude={1.0}
         speed={0.75}
-        className="absolute bottom-0 w-full h-full"
+        className="absolute inset-0 w-full h-full"
       />
     </section>
   );

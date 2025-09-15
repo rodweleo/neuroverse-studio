@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/use-auth-client";
 import { CircleUserRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
+import { formatPrincipal } from "@/utils";
 
 interface AuthBtnProps {
   className?: string;
@@ -67,14 +68,7 @@ export default function AuthBtn(props: AuthBtnProps) {
       onClick={() => setOpen(true)}
     >
       <CircleUserRound />
-      <span>
-        {principalString.slice(0, 8) +
-          "..." +
-          principalString.slice(
-            principalString.length - 8,
-            principalString.length
-          )}
-      </span>
+      <span>{formatPrincipal(principal)}</span>
     </Button>
   );
 }

@@ -7,7 +7,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     <div className="min-h-screen bg-base-black font-inter text-foreground w-full">
       <Header />
       <main>{children}</main>
-      <footer className="border-t p-8">
+      <footer className="border-t p-8 mt-20">
         <section className="flex items-center justify-between text-sm">
           <p>
             <span className="text-gray-300">Brought to you by </span>
