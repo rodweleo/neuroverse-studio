@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import useAllAgentVendors from "@/hooks/useAllAgentVendors";
 import { LoadingAgentsFallback } from "@/components/agent/LoadingAgentsFallback";
+import CallToAction from "@/components/sections/CTASection";
 
 // Lazy load heavy components
 const LazyAgentGrid = lazy(() => import("@/components/home/AgentGrid"));
@@ -55,30 +56,18 @@ const Index = () => {
               {/* CTA Buttons */}
               <div className="space-y-6">
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Button
-                    size="lg"
-                    className="font-bold bg-neon-purple hover:bg-neon-purple/80 text-white text-lg px-8 py-6 btn-focus transform hover:scale-105 transition-all duration-300"
-                    asChild
+                  <Link
+                    to="/deploy"
+                    className="px-6 py-4 rounded-2xl bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-semibold shadow-lg hover:scale-105 transform transition"
                   >
-                    <Link to="/deploy" aria-label="Deploy your first AI agent">
-                      <Rocket className="mr-3 h-6 w-6" />
-                      Deploy Your Agent
-                    </Link>
-                  </Button>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="border-2 border-neon-purple text-white hover:bg-neon-purple/50 bg-transparent text-lg px-8 py-6 btn-focus transform hover:scale-105 transition-all duration-300"
-                    asChild
+                    Deploy Your Agent
+                  </Link>
+                  <Link
+                    to="/agent-marketplace"
+                    className="px-6 py-4 rounded-2xl border border-purple-400 text-purple-300 font-semibold hover:bg-purple-900/30 hover:scale-105 transform transition"
                   >
-                    <Link
-                      to="/agent-marketplace"
-                      aria-label="Try live demo of AI agents"
-                    >
-                      <Play className="mr-3 h-6 w-6" />
-                      Try Live Demo
-                    </Link>
-                  </Button>
+                    ▶ Try Live Demo
+                  </Link>
                 </div>
               </div>
 
@@ -190,6 +179,9 @@ const Index = () => {
 
       {/* FAQ Section */}
       <FAQSection />
+
+      {/*CALL TO ACTION SECTION*/}
+      <CallToAction />
     </div>
   );
 };
