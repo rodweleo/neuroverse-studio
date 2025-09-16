@@ -71,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: (data) => {
       toast.success("Successfully logged in!");
-      console.log(data);
+      // console.log(data);
     },
     onError: (error) => {
       console.error("Login error:", error);

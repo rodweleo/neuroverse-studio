@@ -27,7 +27,7 @@ import {
   Tool,
 } from "../../../../declarations/neuroverse-studio-backend/neuroverse-studio-backend.did";
 import { useNeuroTokenInfo } from "@/hooks/use-neuro-token";
-import { toRawTokenAmount } from "@/utils";
+import { formatTokenAmount, toRawTokenAmount } from "@/utils";
 import { useDeployAgent } from "@/hooks/use-queries";
 import { Badge } from "@/components/ui/badge";
 import useUserAgents from "@/hooks/useUserAgents";
@@ -88,7 +88,7 @@ const AgentCreationForm = () => {
     currentBalance: userTokenBalance ? userTokenBalance[0].formattedBalance : 0,
     isFirstTimeDeployer: deployedUserAgents?.length === 0 ? true : false,
     tokenSymbol: "NEURO",
-    agentName: formData.name,
+    agent: formData,
     welcomeBonus: 100,
   });
 
@@ -165,22 +165,6 @@ const AgentCreationForm = () => {
     }
 
     try {
-      let createAgentArgs: CreateAgentArgs = {
-        agentId: Date.now().toString(),
-        name: formData.name,
-        category: formData.category,
-        description: formData.description,
-        system_prompt: formData.systemPrompt,
-        isFree: formData.isFree,
-        isPublic: formData.isPublic,
-        price: BigInt(
-          toRawTokenAmount(formData.price, neuroTokenInfo?.decimals)
-        ),
-        vendor: principal,
-        has_tools: formData.tools.length > 0,
-        tools: formData.tools.map((t) => t.id.toString()),
-      };
-
       //check if the agents has any premium tools to charge
       const premiumTools = formData.tools.filter((t) => Number(t.price) > 0);
 
@@ -193,20 +177,6 @@ const AgentCreationForm = () => {
         setIsModalOpen(true);
         return;
       }
-
-      let response = await deployAgentMutation.mutateAsync(createAgentArgs);
-
-      if ("success" in response) {
-        toast.success("Agent deployed cuccessfully!", {
-          description: response.success.message,
-        });
-      } else if ("failed" in response) {
-        toast.error("Failed to deploy agent!", {
-          description: response.failed.message,
-        });
-      }
-
-      setIsLoading(false);
     } catch (e) {
       console.log(e);
       toast.error("Agent deployment error", {
@@ -254,6 +224,36 @@ const AgentCreationForm = () => {
 
   const handleConfirmPayment = async () => {
     console.log("Handling final deployment");
+
+    // let createAgentArgs: CreateAgentArgs = {
+    //   agentId: Date.now().toString(),
+    //   name: formData.name,
+    //   category: formData.category,
+    //   description: formData.description,
+    //   system_prompt: formData.systemPrompt,
+    //   isFree: formData.isFree,
+    //   isPublic: formData.isPublic,
+    //   price: BigInt(toRawTokenAmount(formData.price, neuroTokenInfo?.decimals)),
+    //   vendor: principal,
+    //   has_tools: formData.tools.length > 0,
+    //   tools: formData.tools.map((t) => t.id.toString()),
+    // };
+
+    // let response = await deployAgentMutation.mutateAsync(createAgentArgs);
+
+    // if ("success" in response) {
+    //   toast.success("Agent deployed cuccessfully!", {
+    //     description: response.success.message,
+    //   });
+
+    //   setIsLoading(false);
+    // } else if ("failed" in response) {
+    //   toast.error("Failed to deploy agent!", {
+    //     description: response.failed.message,
+    //   });
+
+    //   setIsLoading(false);
+    // }
   };
   return (
     <div className="space-y-8 ">
@@ -515,7 +515,9 @@ const AgentCreationForm = () => {
                                 {tool.name}
                               </Label>
                               <Badge>
-                                {tool.price > 0 ? Number(tool.price) : "FREE"}{" "}
+                                {tool.price > 0
+                                  ? formatTokenAmount(tool.price, tool.decimals)
+                                  : "FREE"}{" "}
                                 {tool.currency}
                               </Badge>
                             </div>

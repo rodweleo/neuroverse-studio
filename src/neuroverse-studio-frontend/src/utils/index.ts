@@ -25,7 +25,7 @@ export function formatTokenAmount(
 ): string {
   return new BigNumber(rawAmount.toString())
     .dividedBy(new BigNumber(10).pow(decimals))
-    .toFixed(typeof decimals === "bigint" ? Number(decimals) : decimals);
+    .toFixed(4);
 }
 
 export function toRawTokenAmount(
