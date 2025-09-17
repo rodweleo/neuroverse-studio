@@ -25,11 +25,17 @@ import TokenHelper "./TokenHelper";
 import Icrc1Ledger "canister:icrc1_ledger_canister";
 import Nat "mo:base/Nat";
 import Result "mo:base/Result";
+import Nat64 "mo:base/Nat64";
+import Debug "mo:base/Debug";
 import TransactionTypes "./types/transaction.type";
 import TransactionModule "./modules/transaction.module";
 import SubscriptionTypes "./types/subscription.type";
 import SubscriptionModule "./modules/subscription.module";
 import SubscriptionType "types/subscription.type";
+import Icrc1TokenType "types/icrc1Token.type";
+import ToolModule "./modules/tool.module";
+import Icrc1TokenModule "./modules/icrc1Token.module";
+import UtilsModule "./modules/utils.module";
 
 persistent actor NeuroVerse {
 
@@ -160,7 +166,10 @@ persistent actor NeuroVerse {
   };
 
   public func createAgent(createAgentArgs : Types.CreateAgentArgs) : async Types.CreateAgentResponse {
+    Debug.print("createAgent: start for agentId=" # createAgentArgs.agentId);
+
     try {
+      // 1) Build agent value
       let agent : Types.Agent = {
         id = createAgentArgs.agentId;
         name = createAgentArgs.name;
@@ -174,37 +183,141 @@ persistent actor NeuroVerse {
         price = createAgentArgs.price;
         created_by = createAgentArgs.vendor;
       };
+      Debug.print("createAgent: agent object created");
 
-      // Store in global agents map
+      // 2) Tools: collect payable creators/amounts
+      let toolIds : [Text] = createAgentArgs.tools;
+      Debug.print("createAgent: tools count=" # Nat.toText(toolIds.size()));
+
+      // if (toolIds.size() > 0) {
+      //   let payableCreatorsBuf = Buffer.Buffer<Principal>(toolIds.size());
+      //   let payableAmountsBuf = Buffer.Buffer<Nat>(toolIds.size());
+
+      //   do {
+      //     Debug.print("createAgent: fetching tool details and filtering price > 0");
+      //     // Wrap tool fetching in its own try so one failure doesn’t break the whole flow
+      //     try {
+      //       for (toolId in toolIds.vals()) {
+      //         let toolOpt = ToolModule.getToolById(tools, toolId);
+      //         switch (toolOpt) {
+      //           case (?tool) {
+      //             if (tool.price > 0) {
+      //               let amt = UtilsModule.convertToNativeFormat(tool.price, tool.decimals);
+      //               payableCreatorsBuf.add(tool.creator);
+      //               payableAmountsBuf.add(amt);
+      //               Debug.print("createAgent: tool " # toolId # " payable -> creator=" # Principal.toText(tool.creator) # ", amount=" # Nat.toText(amt));
+      //             } else {
+      //               Debug.print("createAgent: tool " # toolId # " price is 0, skipping");
+      //             };
+      //           };
+      //           case null {
+      //             Debug.print("createAgent: tool " # toolId # " not found, skipping");
+      //           };
+      //         };
+      //       };
+      //     } catch (e) {
+      //       Debug.print("createAgent: error while fetching/filtering tools: " # Error.message(e));
+      //       // continue; we still attempt to deploy the agent and reward vendor
+      //     };
+      //   };
+
+      //   let creators : [Principal] = Buffer.toArray(payableCreatorsBuf);
+      //   let amounts : [Nat] = Buffer.toArray(payableAmountsBuf);
+      //   Debug.print("createAgent: payable tools count=" # Nat.toText(creators.size()));
+
+      //   // 3) Execute tool payouts (ICRC-1)
+      //   let outcomesBuf = Buffer.Buffer<Icrc1TokenType.TransferOutcome>(creators.size());
+      //   var i : Nat = 0;
+
+      //   while (i < creators.size()) {
+      //     let toAccount : Icrc1Ledger.Account = {
+      //       owner = creators[i];
+      //       subaccount = null;
+      //     };
+
+      //     let nowNs64 : Nat64 = Nat64.fromIntWrap(Time.now());
+      //     let arg : Icrc1Ledger.TransferArg = {
+      //       from_subaccount = null;
+      //       to = toAccount;
+      //       amount = amounts[i];
+      //       fee = null; // use ledger default fee
+      //       memo = null; // optionally include agentId/toolId
+      //       created_at_time = ?nowNs64;
+      //     };
+
+      //     Debug.print(
+      //       "createAgent: paying tool[" # Nat.toText(i)
+      //       # "] creator=" # Principal.toText(creators[i])
+      //       # " amount=" # Nat.toText(amounts[i])
+      //     );
+
+      //     // Catch per-transfer errors to continue the batch
+      //     let outcome : Icrc1TokenType.TransferOutcome = try {
+      //       let res = await Icrc1TokenModule.transferIcrcTokenToAccount(arg);
+      //       switch (res) {
+      //         case (#ok blockIndex) {
+      //           let msg = "toolPayment blockIndex=" # Nat.toText(blockIndex);
+      //           Debug.print("createAgent: payout success -> " # msg);
+      //           {
+      //             status = "ok";
+      //             timestamp = Time.now();
+      //             message = msg;
+      //             error_code = null;
+      //           };
+      //         };
+      //         case (#err errMsg) {
+      //           Debug.print("createAgent: payout failed -> " # errMsg);
+      //           {
+      //             status = "err";
+      //             timestamp = Time.now();
+      //             message = errMsg;
+      //             error_code = null;
+      //           };
+      //         };
+      //       };
+      //     } catch (e) {
+      //       let em = "exception during payout: " # Error.message(e);
+      //       Debug.print("createAgent: " # em);
+      //       {
+      //         status = "err";
+      //         timestamp = Time.now();
+      //         message = em;
+      //         error_code = null;
+      //       };
+      //     };
+
+      //     outcomesBuf.add(outcome);
+      //     i += 1;
+      //   };
+      // };
+
+      // 4) Persist agent data
       agents.put(createAgentArgs.agentId, agent);
-
-      // Get or create the user's agent map
       let agentsMap = switch (userAgents.get(createAgentArgs.vendor)) {
         case (?map) map;
         case null HashMap.HashMap<Text, Types.Agent>(5, Text.equal, Text.hash);
       };
-
       agentsMap.put(createAgentArgs.agentId, agent);
       userAgents.put(createAgentArgs.vendor, agentsMap);
+      Debug.print("createAgent: agent stored for vendor=" # Principal.toText(createAgentArgs.vendor));
 
-      // REWARD THE USER FOR DEPLOYING AN AGENT SUCCESSFULLY ON NEUROVERSE
-
+      // 5) Reward vendor for deploying
+      Debug.print("createAgent: sending vendor reward");
       let response = await transferNeuro(
         10_000_000_000,
-        {
-          owner = createAgentArgs.vendor;
-          subaccount = null;
-        },
+        { owner = createAgentArgs.vendor; subaccount = null },
       );
 
       switch (response) {
         case (#ok(blockIndex)) {
+          Debug.print("createAgent: reward success blockIndex=" # Nat.toText(blockIndex));
           #success {
             status = "SUCCESS";
             message = createAgentArgs.name # " agent deployed and you've been rewarded 100 NEUROS. Block index: " # Nat.toText(blockIndex);
           };
         };
         case (#err(msg)) {
+          Debug.print("createAgent: reward failed -> " # msg);
           #failed {
             status = "FAIL";
             message = createAgentArgs.name # " agent created, but reward failed: " # msg;
@@ -212,12 +325,14 @@ persistent actor NeuroVerse {
         };
       };
     } catch (error : Error) {
+      Debug.print("createAgent: top-level error -> " # Error.message(error));
       #failed {
         status = "FAIL";
         message = "Error creating agent: " # Error.message(error);
       };
-    }
-
+    } finally {
+      Debug.print("createAgent: end for agentId=" # createAgentArgs.agentId);
+    };
   };
 
   // Delete an agent by its Text key

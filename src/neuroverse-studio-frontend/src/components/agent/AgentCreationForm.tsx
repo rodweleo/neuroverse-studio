@@ -223,37 +223,35 @@ const AgentCreationForm = () => {
   };
 
   const handleConfirmPayment = async () => {
-    console.log("Handling final deployment");
+    let createAgentArgs: CreateAgentArgs = {
+      agentId: Date.now().toString(),
+      name: formData.name,
+      category: formData.category,
+      description: formData.description,
+      system_prompt: formData.systemPrompt,
+      isFree: formData.isFree,
+      isPublic: formData.isPublic,
+      price: BigInt(toRawTokenAmount(formData.price, neuroTokenInfo?.decimals)),
+      vendor: principal,
+      has_tools: formData.tools.length > 0,
+      tools: formData.tools.map((t) => t.id.toString()),
+    };
 
-    // let createAgentArgs: CreateAgentArgs = {
-    //   agentId: Date.now().toString(),
-    //   name: formData.name,
-    //   category: formData.category,
-    //   description: formData.description,
-    //   system_prompt: formData.systemPrompt,
-    //   isFree: formData.isFree,
-    //   isPublic: formData.isPublic,
-    //   price: BigInt(toRawTokenAmount(formData.price, neuroTokenInfo?.decimals)),
-    //   vendor: principal,
-    //   has_tools: formData.tools.length > 0,
-    //   tools: formData.tools.map((t) => t.id.toString()),
-    // };
+    let response = await deployAgentMutation.mutateAsync(createAgentArgs);
 
-    // let response = await deployAgentMutation.mutateAsync(createAgentArgs);
+    if ("success" in response) {
+      toast.success("Agent deployed cuccessfully!", {
+        description: response.success.message,
+      });
 
-    // if ("success" in response) {
-    //   toast.success("Agent deployed cuccessfully!", {
-    //     description: response.success.message,
-    //   });
+      setIsLoading(false);
+    } else if ("failed" in response) {
+      toast.error("Failed to deploy agent!", {
+        description: response.failed.message,
+      });
 
-    //   setIsLoading(false);
-    // } else if ("failed" in response) {
-    //   toast.error("Failed to deploy agent!", {
-    //     description: response.failed.message,
-    //   });
-
-    //   setIsLoading(false);
-    // }
+      setIsLoading(false);
+    }
   };
   return (
     <div className="space-y-8 ">

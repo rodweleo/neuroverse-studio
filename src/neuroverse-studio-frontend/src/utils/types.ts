@@ -81,3 +81,10 @@ export type UploadProgress = {
   total: number;
   percentage: number;
 };
+
+export type AccountToAccountIcrc1TokenTransfer = {
+  from: Principal;
+  to: Principal;
+  amount: number | bigint;
+  decimals?: number;
+};

@@ -1,6 +1,6 @@
 import { toast } from "@/components/ui/sonner";
 import { useAuth } from "@/contexts/use-auth-client";
-import { formatTokenAmount } from "@/utils";
+import { formatTokenAmount, toRawTokenAmount } from "@/utils";
 import NeuroverseBackendActor from "@/utils/NeuroverseBackendActor";
 import { IcrcLedgerCanister } from "@dfinity/ledger-icrc";
 import { Principal } from "@dfinity/principal";
@@ -11,6 +11,8 @@ import {
   CreateAgentArgs,
   CreateAgentResponse,
 } from "../../../declarations/neuroverse-studio-backend/neuroverse-studio-backend.did";
+import { createAgent } from "@dfinity/utils";
+import { AccountToAccountIcrc1TokenTransfer } from "@/utils/types";
 
 export function useSubscribeToAgent() {
   const { agent, principal: from } = useAuth();
@@ -290,16 +292,36 @@ export function useUserTokenTransfer() {
 
 export function useDeployAgent() {
   const { agent, principal: from } = useAuth();
-
+  const a2aIcrc1TokenTransferMutation = useAccountToAccountIcrc1TokenTransfer();
   return useMutation({
-    mutationFn: async (createAgentArgs: CreateAgentArgs) => {
+    mutationFn: async (createAgentArgs: any) => {
       if (!agent) throw new Error("HTTP Agent is not available");
 
-      const response = await NeuroverseBackendActor.createAgent(
-        createAgentArgs
-      );
+      const args = {
+        ...createAgentArgs,
+        tools: createAgentArgs.tools.map((t: any) => t.id.toString()),
+      };
+      const response = await NeuroverseBackendActor.createAgent(args);
 
       if ("success" in response) {
+        // filter out the premium tools
+        const premiumTools = createAgentArgs.tools.filter(
+          (t) => Number(t.price) > 0
+        );
+        if (premiumTools.length > 0) {
+          const results = [];
+          for (const tool of premiumTools) {
+            const res = await a2aIcrc1TokenTransferMutation.mutateAsync({
+              from,
+              to: tool.creator,
+              amount: toRawTokenAmount(tool.amount, tool.decimals),
+            });
+            results.push(res);
+            await new Promise((r) => setTimeout(r, 200)); // optional delay (200ms)
+          }
+          console.log("All tool creator payouts done safely:", results);
+        }
+
         toast.success("Agent deployed cuccessfully!", {
           description: response.success.message,
         });
@@ -323,6 +345,65 @@ export function useDeployAgent() {
       }
     },
     onError: (error: Error) => {
+      toast.error("Error deploying agent: ", {
+        description: error.message,
+      });
+    },
+  });
+}
+
+export function useAccountToAccountIcrc1TokenTransfer() {
+  const { identity } = useAuth();
+  return useMutation({
+    mutationFn: async (
+      accountToAccountIcrc1TokenTransferArgs: AccountToAccountIcrc1TokenTransfer
+    ): Promise<bigint> => {
+      const agent = await createAgent({
+        identity,
+        host:
+          process.env.DFX_NETWORK === "local"
+            ? "http://127.0.0.1:4943"
+            : "https://icp-api.io",
+      });
+
+      const ledger = IcrcLedgerCanister.create({
+        agent,
+        canisterId: Principal.fromText(
+          process.env.CANISTER_ID_ICRC1_LEDGER_CANISTER!
+        ),
+      });
+
+      if (process.env.DFX_NETWORK === "local") {
+        await agent.fetchRootKey();
+      }
+
+      const transferResult = await ledger.transfer({
+        to: {
+          owner: accountToAccountIcrc1TokenTransferArgs.to,
+          subaccount: [],
+        },
+        amount:
+          typeof accountToAccountIcrc1TokenTransferArgs.amount === "bigint"
+            ? accountToAccountIcrc1TokenTransferArgs.amount
+            : BigInt(
+                toRawTokenAmount(
+                  accountToAccountIcrc1TokenTransferArgs.amount,
+                  accountToAccountIcrc1TokenTransferArgs.decimals
+                )
+              ), // amount in smallest unit
+        // fee, memo, created_at_time can be added as needed
+      });
+
+      return transferResult;
+    },
+    onSuccess: (data) => {
+      console.log(data);
+      queryClient.invalidateQueries({
+        queryKey: ["neuroverse-agents"],
+      });
+    },
+    onError: (error: Error) => {
+      console.log(error);
       toast.error("Error deploying agent: ", {
         description: error.message,
       });
