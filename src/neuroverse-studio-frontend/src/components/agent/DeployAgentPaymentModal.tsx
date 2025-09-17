@@ -69,6 +69,7 @@ const DeployAgentPaymentModal = ({
       await onConfirm();
       onClose();
     } catch (error) {
+      console.log(error);
       console.error("Deployment failed:", error);
     } finally {
       setIsProcessing(false);

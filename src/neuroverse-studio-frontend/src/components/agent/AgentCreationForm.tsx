@@ -137,6 +137,32 @@ const AgentCreationForm = () => {
     },
   ];
 
+  const resetForm = () => {
+    // Reset form
+    setFormData({
+      name: "",
+      description: "",
+      category: "",
+      systemPrompt: "",
+      icon: "Bot",
+      color: "text-neon-blue",
+      price: 0.1,
+      isPublic: false,
+      temperature: 0.7,
+      maxTokens: 1000,
+      knowledgeBase: [],
+      knowledgeConfig: {
+        maxContextLength: 4000,
+        searchSensitivity: 0.7,
+        citationsEnabled: true,
+        chunkSize: 1000,
+        overlap: 200,
+      },
+      isFree: true,
+      tools: [],
+    });
+  };
+
   const handleTemplateSelect = (template: (typeof roleTemplates)[0]) => {
     setFormData((prev) => ({
       ...prev,
@@ -172,6 +198,9 @@ const AgentCreationForm = () => {
         console.log("Premium tools found");
         setModalProps({
           ...modalProps,
+          currentBalance: userTokenBalance
+            ? userTokenBalance[0].formattedBalance
+            : 0,
           selectedTools: premiumTools,
         });
         setIsModalOpen(true);
@@ -186,30 +215,6 @@ const AgentCreationForm = () => {
     } finally {
       setIsLoading(false);
     }
-
-    // Reset form
-    setFormData({
-      name: "",
-      description: "",
-      category: "",
-      systemPrompt: "",
-      icon: "Bot",
-      color: "text-neon-blue",
-      price: 0.1,
-      isPublic: false,
-      temperature: 0.7,
-      maxTokens: 1000,
-      knowledgeBase: [],
-      knowledgeConfig: {
-        maxContextLength: 4000,
-        searchSensitivity: 0.7,
-        citationsEnabled: true,
-        chunkSize: 1000,
-        overlap: 200,
-      },
-      isFree: true,
-      tools: [],
-    });
   };
 
   const filteredTools = availableTools
@@ -223,7 +228,7 @@ const AgentCreationForm = () => {
   };
 
   const handleConfirmPayment = async () => {
-    let createAgentArgs: CreateAgentArgs = {
+    let createAgentArgs = {
       agentId: Date.now().toString(),
       name: formData.name,
       category: formData.category,
@@ -234,7 +239,7 @@ const AgentCreationForm = () => {
       price: BigInt(toRawTokenAmount(formData.price, neuroTokenInfo?.decimals)),
       vendor: principal,
       has_tools: formData.tools.length > 0,
-      tools: formData.tools.map((t) => t.id.toString()),
+      tools: formData.tools,
     };
 
     let response = await deployAgentMutation.mutateAsync(createAgentArgs);
@@ -244,6 +249,8 @@ const AgentCreationForm = () => {
         description: response.success.message,
       });
 
+      resetForm();
+
       setIsLoading(false);
     } else if ("failed" in response) {
       toast.error("Failed to deploy agent!", {
@@ -251,6 +258,7 @@ const AgentCreationForm = () => {
       });
 
       setIsLoading(false);
+      // resetForm();
     }
   };
   return (

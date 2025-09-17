@@ -21,12 +21,13 @@ import { DeveloperPortal } from "@/components/DeveloperPortal";
 import { useAllTools } from "@/hooks/use-all-tools";
 
 const ToolMarketplace = () => {
-  const { data, isFetching } = useAllTools();
+  const { data } = useAllTools();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedTool, setSelectedTool] = useState(null);
   const [showDeveloperPortal, setShowDeveloperPortal] = useState(false);
 
+  console.log(data);
   const filteredTools = data
     ? data.filter((tool) => {
         const matchesSearch =

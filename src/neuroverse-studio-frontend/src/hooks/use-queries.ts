@@ -7,10 +7,7 @@ import { Principal } from "@dfinity/principal";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNeuroTokenInfo } from "./use-neuro-token";
 import { queryClient } from "@/components/providers";
-import {
-  CreateAgentArgs,
-  CreateAgentResponse,
-} from "../../../declarations/neuroverse-studio-backend/neuroverse-studio-backend.did";
+import { CreateAgentResponse } from "../../../declarations/neuroverse-studio-backend/neuroverse-studio-backend.did";
 import { createAgent } from "@dfinity/utils";
 import { AccountToAccountIcrc1TokenTransfer } from "@/utils/types";
 
@@ -290,74 +287,13 @@ export function useUserTokenTransfer() {
   });
 }
 
-export function useDeployAgent() {
-  const { agent, principal: from } = useAuth();
-  const a2aIcrc1TokenTransferMutation = useAccountToAccountIcrc1TokenTransfer();
-  return useMutation({
-    mutationFn: async (createAgentArgs: any) => {
-      if (!agent) throw new Error("HTTP Agent is not available");
-
-      const args = {
-        ...createAgentArgs,
-        tools: createAgentArgs.tools.map((t: any) => t.id.toString()),
-      };
-      const response = await NeuroverseBackendActor.createAgent(args);
-
-      if ("success" in response) {
-        // filter out the premium tools
-        const premiumTools = createAgentArgs.tools.filter(
-          (t) => Number(t.price) > 0
-        );
-        if (premiumTools.length > 0) {
-          const results = [];
-          for (const tool of premiumTools) {
-            const res = await a2aIcrc1TokenTransferMutation.mutateAsync({
-              from,
-              to: tool.creator,
-              amount: toRawTokenAmount(tool.amount, tool.decimals),
-            });
-            results.push(res);
-            await new Promise((r) => setTimeout(r, 200)); // optional delay (200ms)
-          }
-          console.log("All tool creator payouts done safely:", results);
-        }
-
-        toast.success("Agent deployed cuccessfully!", {
-          description: response.success.message,
-        });
-      } else if ("failed" in response) {
-        toast.error("Failed to deploy agent!", {
-          description: response.failed.message,
-        });
-      }
-
-      return response;
-    },
-    onSuccess: (data: CreateAgentResponse) => {
-      if ("success" in data) {
-        toast.success(`Agent deployed successfully!`, {
-          description: data.success.message,
-        });
-
-        queryClient.invalidateQueries({
-          queryKey: ["neuroverse-agents"],
-        });
-      }
-    },
-    onError: (error: Error) => {
-      toast.error("Error deploying agent: ", {
-        description: error.message,
-      });
-    },
-  });
-}
-
 export function useAccountToAccountIcrc1TokenTransfer() {
   const { identity } = useAuth();
   return useMutation({
     mutationFn: async (
       accountToAccountIcrc1TokenTransferArgs: AccountToAccountIcrc1TokenTransfer
     ): Promise<bigint> => {
+      console.log(accountToAccountIcrc1TokenTransferArgs);
       const agent = await createAgent({
         identity,
         host:
@@ -385,13 +321,9 @@ export function useAccountToAccountIcrc1TokenTransfer() {
         amount:
           typeof accountToAccountIcrc1TokenTransferArgs.amount === "bigint"
             ? accountToAccountIcrc1TokenTransferArgs.amount
-            : BigInt(
-                toRawTokenAmount(
-                  accountToAccountIcrc1TokenTransferArgs.amount,
-                  accountToAccountIcrc1TokenTransferArgs.decimals
-                )
-              ), // amount in smallest unit
-        // fee, memo, created_at_time can be added as needed
+            : BigInt(accountToAccountIcrc1TokenTransferArgs.amount), // amount in smallest unit
+        created_at_time: BigInt(Date.now()) * BigInt(1e6),
+        // fee, memo, can be added as needed
       });
 
       return transferResult;
@@ -404,6 +336,68 @@ export function useAccountToAccountIcrc1TokenTransfer() {
     },
     onError: (error: Error) => {
       console.log(error);
+      toast.error("Error deploying agent: ", {
+        description: error.message,
+      });
+    },
+  });
+}
+
+export function useDeployAgent() {
+  const { agent, principal: from } = useAuth();
+  const a2aIcrc1TokenTransferMutation = useAccountToAccountIcrc1TokenTransfer();
+  return useMutation({
+    mutationFn: async (createAgentArgs: any) => {
+      if (!agent) throw new Error("HTTP Agent is not available");
+
+      const args = {
+        ...createAgentArgs,
+        tools: createAgentArgs.tools.map((t: any) => t.id.toString()),
+      };
+      const response = await NeuroverseBackendActor.createAgent(args);
+
+      if ("success" in response) {
+        // filter out the premium tools
+        const premiumTools = createAgentArgs.tools.filter(
+          (t) => Number(t.price) > 0
+        );
+        if (premiumTools.length > 0) {
+          const results = [];
+          for (const tool of premiumTools) {
+            const res = await a2aIcrc1TokenTransferMutation.mutateAsync({
+              from,
+              to: tool.creator,
+              amount: tool.price,
+            });
+            results.push(res);
+            await new Promise((r) => setTimeout(r, 200));
+          }
+          console.log("All tool creator payouts done safely:", results);
+        }
+
+        toast.success("Agent deployed cuccessfully!", {
+          description: response.success.message,
+        });
+      } else if ("failed" in response) {
+        toast.error("Failed to deploy agent!", {
+          description: response.failed.message,
+        });
+      }
+
+      return response;
+    },
+    onSuccess: (data: CreateAgentResponse) => {
+      if ("success" in data) {
+        toast.success(`Agent deployed successfully!`, {
+          description: data.success.message,
+        });
+
+        queryClient.invalidateQueries({
+          queryKey: ["neuroverse-agents"],
+        });
+      }
+    },
+    onError: (error: Error) => {
       toast.error("Error deploying agent: ", {
         description: error.message,
       });
