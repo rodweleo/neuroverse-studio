@@ -48,7 +48,6 @@ const DeployAgentPaymentModal = ({
 }: DeployAgentPaymentModalProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
 
-  console.log(agent);
   const totalToolCost = selectedTools.reduce(
     (sum, tool) => sum + Number(formatTokenAmount(tool.price, tool.decimals)),
     0

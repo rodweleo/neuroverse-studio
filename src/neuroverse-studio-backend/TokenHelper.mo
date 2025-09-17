@@ -2,6 +2,8 @@ import Icrc1Ledger "canister:icrc1_ledger_canister";
 import Result "mo:base/Result";
 import Error "mo:base/Error";
 import Debug "mo:base/Debug";
+import Time "mo:base/Time";
+import Nat64 "mo:base/Nat64";
 
 module {
   public type TransferArgs = {
@@ -17,13 +19,14 @@ module {
       # debug_show (args.toAccount)
     );
 
+    let nowNs64 : Nat64 = Nat64.fromIntWrap(Time.now());
     let transferArgs : Icrc1Ledger.TransferArg = {
       memo = null;
       amount = args.amount;
       from_subaccount = null;
       fee = null;
       to = args.toAccount;
-      created_at_time = null;
+      created_at_time = ?nowNs64;
     };
 
     try {
