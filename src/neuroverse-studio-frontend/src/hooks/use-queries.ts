@@ -367,7 +367,7 @@ export function useDeployAgent() {
             const res = await a2aIcrc1TokenTransferMutation.mutateAsync({
               from,
               to: tool.creator,
-              amount: tool.price,
+              amount: BigInt(toRawTokenAmount(tool.price, tool.decimals)),
             });
             results.push(res);
             await new Promise((r) => setTimeout(r, 200));

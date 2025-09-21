@@ -43,7 +43,7 @@ const ToolCard: React.FC<ToolCardProps> = ({ tool, onSelect }) => {
     }
   };
 
-  const formatedToolPrice = formatTokenAmount(tool.price, tool.decimals);
+  const formatedToolPrice = Number(tool.price);
 
   return (
     <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border hover:border-blue-200 w-full">

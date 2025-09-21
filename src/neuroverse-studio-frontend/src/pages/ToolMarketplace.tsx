@@ -27,7 +27,6 @@ const ToolMarketplace = () => {
   const [selectedTool, setSelectedTool] = useState(null);
   const [showDeveloperPortal, setShowDeveloperPortal] = useState(false);
 
-  console.log(data);
   const filteredTools = data
     ? data.filter((tool) => {
         const matchesSearch =

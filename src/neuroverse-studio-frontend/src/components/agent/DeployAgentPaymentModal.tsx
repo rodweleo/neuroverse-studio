@@ -49,7 +49,7 @@ const DeployAgentPaymentModal = ({
   const [isProcessing, setIsProcessing] = useState(false);
 
   const totalToolCost = selectedTools.reduce(
-    (sum, tool) => sum + Number(formatTokenAmount(tool.price, tool.decimals)),
+    (sum, tool) => sum + Number(tool.price),
     0
   );
   const platformFee = (totalToolCost * platformFeePercentage) / 100;
@@ -121,8 +121,7 @@ const DeployAgentPaymentModal = ({
 
                         <Badge variant="outline" className="text-xs max-w-sm">
                           <p className="font-bold text-neon-blue">
-                            {formatTokenAmount(tool.price, tool.decimals)}{" "}
-                            {tool.currency}
+                            {Number(tool.price)} {tool.currency}
                           </p>
                         </Badge>
                       </div>

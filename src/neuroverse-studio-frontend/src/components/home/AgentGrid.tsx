@@ -32,7 +32,7 @@ const AgentGrid = () => {
           </Link>
         </Button>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-2 gap-8">
         {featuredAgents.length === 0 && (
           <div className="">No live agents found! Apologies partner :|</div>
         )}

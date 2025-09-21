@@ -521,9 +521,7 @@ const AgentCreationForm = () => {
                                 {tool.name}
                               </Label>
                               <Badge>
-                                {tool.price > 0
-                                  ? formatTokenAmount(tool.price, tool.decimals)
-                                  : "FREE"}{" "}
+                                {tool.price > 0 ? Number(tool.price) : "FREE"}{" "}
                                 {tool.currency}
                               </Badge>
                             </div>
