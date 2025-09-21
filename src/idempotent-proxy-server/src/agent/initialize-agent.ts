@@ -3,6 +3,7 @@ import { MemorySaver } from '@langchain/langgraph';
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
 import { HumanMessage } from '@langchain/core/messages';
 import { CryptoCoinInfoTool } from './tools';
+import { TavilySearch } from '@langchain/tavily';
 
 export const initializeAgent = (env: Env) => {
 	try {
@@ -21,12 +22,21 @@ export const initializeAgent = (env: Env) => {
 		// Create the React agent
 		const agent = createReactAgent({
 			llm,
-			tools: [CryptoCoinInfoTool],
+			tools: [
+				CryptoCoinInfoTool,
+				new TavilySearch({
+					description: 'Search the web for up-to-date, reliable, and contextually relevant information using Tavily. ',
+					tavilyApiKey: env.TAVILY_API_KEY,
+					maxResults: 10,
+					searchDepth: 'advanced',
+				}),
+			],
 			checkpointSaver: memory,
 			// You can adjust this message for your scenario:
 			messageModifier: `
         Your name is Neuroverse AI agent and you are a helpful agent that can interact with the Internet Computer Protocol. 
         You are empowered to interact on-chain using your tools. 
+		If the user’s question requires current data, call TavilySearch.
         If there is a 5XX (internal) HTTP error code, ask the user to try again later. 
         If someone asks you to do something you can't do with your available tools, you 
         must say so, and encourage them to implement it themselves. 
@@ -43,71 +53,28 @@ export const initializeAgent = (env: Env) => {
 };
 
 export const promptAgent = async (agent: any, config: any, prompt: string) => {
-	const stream = await agent.stream({ messages: [new HumanMessage(prompt)] }, config);
+	try {
+		// Run the agent until completion (no streaming)
+		const result = await agent.invoke({ messages: [new HumanMessage(prompt)] }, config);
 
-	let agentResponse = '';
-	let toolResponses = [];
+		// The result will typically include the conversation history
+		// Extract the latest assistant message
+		const lastMessage = result.messages[result.messages.length - 1];
 
-	for await (const chunk of stream) {
-		if ('agent' in chunk) {
-			const content = chunk.agent.messages[0].content;
-			if (typeof content === 'string') {
-				agentResponse += content + ' ';
-			} else if (Array.isArray(content)) {
-				// Handle array of message objects
-				for (const item of content) {
-					if (item.type === 'text' && item.text) {
-						agentResponse += item.text + ' ';
-					}
-				}
-			} else {
-				// For other object types, try to extract text if available
-				if (content.text) {
-					agentResponse += content.text + ' ';
-				} else {
-					agentResponse += JSON.stringify(content) + ' ';
-				}
-			}
-		} else if ('tools' in chunk) {
-			const content = chunk.tools.messages[0].content;
-			if (typeof content === 'string') {
-				// Store tool responses separately
-				toolResponses.push(content);
-			} else if (Array.isArray(content)) {
-				// Handle array of message objects
-				for (const item of content) {
-					if (item.type === 'text' && item.text) {
-						toolResponses.push(item.text);
-					}
-				}
-			} else {
-				// For other object types, try to extract text if available
-				if (content.text) {
-					toolResponses.push(content.text);
-				} else {
-					toolResponses.push(JSON.stringify(content));
-				}
-			}
+		// Handle different message formats
+		if (typeof lastMessage.content === 'string') {
+			return lastMessage.content.trim();
+		} else if (Array.isArray(lastMessage.content)) {
+			// If content is array of objects (e.g. {type, text})
+			return lastMessage.content
+				.map((item: any) => item.text ?? '')
+				.join(' ')
+				.trim();
+		} else {
+			return JSON.stringify(lastMessage.content);
 		}
+	} catch (error) {
+		console.error('Error in promptAgent:', error);
+		throw error;
 	}
-
-	// Clean up the agent response by removing any tool JSON responses
-	let finalResponse = agentResponse;
-
-	// Remove any tool JSON responses from the agent response
-	for (const toolResponse of toolResponses) {
-		// Check if the tool response is a JSON string
-		if (toolResponse.startsWith('{') && toolResponse.endsWith('}')) {
-			try {
-				// Try to parse it as JSON to confirm it's a valid JSON
-				JSON.parse(toolResponse);
-				// If it's valid JSON, remove it from the agent response
-				finalResponse = finalResponse.replace(toolResponse, '');
-			} catch (e) {
-				// Not valid JSON, keep it in the response
-			}
-		}
-	}
-
-	return finalResponse.trim();
 };
