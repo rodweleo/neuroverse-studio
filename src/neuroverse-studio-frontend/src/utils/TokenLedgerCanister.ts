@@ -127,8 +127,8 @@ class TokenLedgerCanister {
 
         const isLocalDevelopment = process.env.DFX_NETWORK !== "ic";
         const host = isLocalDevelopment
-          ? "http://localhost:4943"
-          : "https://ic0.app";
+          ? "http://127.0.0.1:4943"
+          : "https://icp0.io";
 
         const agent = await createAgent({
           identity,

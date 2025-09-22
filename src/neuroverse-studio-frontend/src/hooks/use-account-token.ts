@@ -1,9 +1,11 @@
 import TokenLedgerCanister from "@/utils/TokenLedgerCanister";
-import { BalanceParams } from "@dfinity/ledger-icrc";
+import { BalanceParams, IcrcLedgerCanister } from "@dfinity/ledger-icrc";
 import { useQuery } from "@tanstack/react-query";
-import type { Principal } from "@dfinity/principal";
+import { Principal } from "@dfinity/principal";
 import { Subaccount } from "@dfinity/ledger-icrc/dist/candid/icrc_ledger";
 import { useNeuroTokenInfo } from "./use-neuro-token";
+import { useAuth } from "@/contexts/use-auth-client";
+import { createAgent } from "@dfinity/utils";
 
 export type UseAccountTokensProps = {
   owner: Principal;
@@ -15,12 +17,21 @@ export const useAccountTokens = ({
   subaccount,
 }: UseAccountTokensProps) => {
   const { data } = useNeuroTokenInfo();
+  const { identity, host } = useAuth();
+  const canisterId = Principal.fromText(
+    process.env.CANISTER_ID_ICRC1_LEDGER_CANISTER!
+  );
 
   return useQuery({
     queryKey: ["neuroverse_account_tokens"],
     queryFn: async () => {
-      const tokenLedgerCanister = new TokenLedgerCanister();
-      const icrcLedger = await tokenLedgerCanister.initIcrcLedger();
+      const agent = await createAgent({ identity, host });
+      if (process.env.DFX_NETWORK !== "ic") await agent.fetchRootKey();
+
+      const icrcLedger = IcrcLedgerCanister.create({
+        agent,
+        canisterId,
+      });
       const balanceParams: BalanceParams = {
         owner,
         subaccount,
@@ -45,5 +56,6 @@ export const useAccountTokens = ({
       ];
       return tokens;
     },
+    enabled: Boolean(identity && canisterId),
   });
 };

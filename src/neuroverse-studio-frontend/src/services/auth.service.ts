@@ -17,7 +17,7 @@ const getIdentityProvider = () => {
   if (typeof window !== "undefined") {
     return development
       ? `http://${CANISTER_ID_INTERNET_IDENTITY}.localhost:4943`
-      : "https://id.ai";
+      : "https://identity.ic0.app";
   }
   return undefined;
 };
@@ -35,7 +35,7 @@ const defaultOptions = {
   },
 };
 
-const host = development ? "http://127.0.0.1:4943" : "https://id.ai";
+const host = development ? "http://127.0.0.1:4943" : "https://icp0.io";
 
 export class AuthService extends BaseService {
   private authClient?: AuthClient;
@@ -72,6 +72,11 @@ export class AuthService extends BaseService {
   }
 
   async loginWithPlug() {
+    if (development) {
+      toast.error("Plug (mainnet) cannot be used against a local canister.");
+      throw new Error("Avoid mixing mainnet wallet with local replica.");
+    }
+
     if (!window.ic?.plug) {
       toast.error("Plug Wallet not available", {
         description: "Please install the Plug extension.",
@@ -101,6 +106,11 @@ export class AuthService extends BaseService {
   }
 
   async loginWithNfid() {
+    if (development) {
+      toast.error("NFID (mainnet) cannot be used against a local canister.");
+      throw new Error("Avoid mixing mainnet identity with local replica.");
+    }
+
     const client = await AuthClient.create(defaultOptions.createOptions);
 
     const APP_NAME = "Neuroverse Studio";
