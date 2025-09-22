@@ -97,7 +97,7 @@ export const TokenTransferModal = ({
     setStatus("idle");
     setTxHash("");
     setError("");
-    onClose();
+    // onClose();
   };
 
   const selectedToken = tokenTransferForm.getValues()?.token;

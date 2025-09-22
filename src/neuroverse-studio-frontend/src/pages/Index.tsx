@@ -1,22 +1,18 @@
-import HolographicRobot3D from "@/components/hero/HolographicRobot3D";
 import ServicesSection from "@/components/sections/ServicesSection";
 import HowToUseSection from "@/components/sections/HowToUseSection";
 import FAQSection from "@/components/sections/FAQSection";
 import ComparisonSection from "@/components/sections/ComparisonSection";
-import { Button } from "@/components/ui/button";
-import { Rocket, Play, Zap, Users, Shield } from "lucide-react";
-import { Link } from "react-router-dom";
+
 import { Suspense, lazy } from "react";
-import useAllAgentVendors from "@/hooks/useAllAgentVendors";
+
 import { LoadingAgentsFallback } from "@/components/agent/LoadingAgentsFallback";
 import CallToAction from "@/components/sections/CTASection";
+import HeroSection from "@/components/sections/HeroSection";
 
 // Lazy load heavy components
 const LazyAgentGrid = lazy(() => import("@/components/home/AgentGrid"));
 
 const Index = () => {
-  const { data: agentVendors } = useAllAgentVendors();
-
   return (
     <div className="space-y-20">
       {/* Background Effects
@@ -25,132 +21,7 @@ const Index = () => {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_60%,rgba(155,93,229,0.15),transparent_50%)]"></div> */}
 
       {/* Immersive Hero Section */}
-      <div className="relative min-h-screen flex items-center justify-center overflow-hidden rounded-lg  ">
-        <div className="relative z-10 container">
-          <div className="gap-12 items-center">
-            {/* Left Content */}
-            <div className="space-y-8 lg:pr-8 grid place-items-center w-full text-center">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glassmorphic border border-neon-blue/30">
-                <Zap className="h-4 w-4 text-neon-blue animate-pulse" />
-                <span className="text-sm font-medium text-neon-blue">
-                  Free to Start • No Coding Required
-                </span>
-              </div>
-
-              {/* Main Heading */}
-              <div className="space-y-6 grid place-items-center">
-                <h1 className="text-2xl md:text-4xl lg:text-6xl xl:text-7xl font-orbitron font-bold leading-wide">
-                  <span className="block">
-                    BUILD, LAUNCH, & MONETIZE AI AGENTS ON-CHAIN
-                  </span>
-                </h1>
-
-                <p className="text-sm lg:text-md lg:text-lg text-muted-foreground leading-relaxed max-w-2xl sm:max-w-3xl">
-                  Explore a decentralized universe of AI agents. Interact with
-                  them, deploy your own, and shape the future of intelligence on
-                  the blockchain.
-                </p>
-              </div>
-
-              {/* CTA Buttons */}
-              <div className="space-y-6">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Link
-                    to="/deploy"
-                    className="px-6 py-4 rounded-2xl bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-semibold shadow-lg hover:scale-105 transform transition"
-                  >
-                    Deploy Your Agent
-                  </Link>
-                  <Link
-                    to="/agent-marketplace"
-                    className="px-6 py-4 rounded-2xl border border-purple-400 text-purple-300 font-semibold hover:bg-purple-900/30 hover:scale-105 transform transition"
-                  >
-                    ▶ Try Live Demo
-                  </Link>
-                </div>
-              </div>
-
-              {/* Features List */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-                <div className="flex items-center space-x-2 text-muted-foreground">
-                  <div className="w-2 h-2 bg-acid-green rounded-full animate-pulse"></div>
-                  <span>Deploy in Minutes</span>
-                </div>
-                <div className="flex items-center space-x-2 text-muted-foreground">
-                  <div className="w-2 h-2 bg-neon-blue rounded-full animate-pulse"></div>
-                  <span>Earn $NEURO Tokens</span>
-                </div>
-                <div className="flex items-center space-x-2 text-muted-foreground">
-                  <div className="w-2 h-2 bg-neon-purple rounded-full animate-pulse"></div>
-                  <span>100% Decentralized</span>
-                </div>
-              </div>
-
-              {/* Social Proof */}
-              {agentVendors ? (
-                agentVendors.length > 5 ? (
-                  <div className="flex items-center space-x-6 pt-4">
-                    <div className="flex items-center space-x-2">
-                      <div className="flex -space-x-2">
-                        {[...Array(4)].map((_, i) => (
-                          <div
-                            key={i}
-                            className="w-8 h-8 rounded-full bg-gradient-to-r from-neon-blue to-neon-purple border-2 border-background flex items-center justify-center"
-                          >
-                            <Users className="h-4 w-4 text-white" />
-                          </div>
-                        ))}
-                      </div>
-
-                      <div className="text-sm text-muted-foreground">
-                        <span className="text-white font-semibold">
-                          {agentVendors.length}+
-                        </span>{" "}
-                        agent creators
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  ""
-                )
-              ) : (
-                ""
-              )}
-            </div>
-
-            {/* Right Content - 3D Robot */}
-            <div className=" hidden relative lg:h-[700px] h-[500px] items-center justify-center">
-              <div
-                className="absolute inset-0 bg-gradient-to-r from-neon-blue/10 via-neon-purple/10 to-acid-green/10 rounded-full blur-3xl animate-pulse"
-                aria-hidden="true"
-              ></div>
-              <div
-                className="relative z-10 w-full h-full"
-                role="img"
-                aria-label="Interactive 3D holographic robot"
-              >
-                <img
-                  src="/logo.png"
-                  alt="NeuroVerse"
-                  className="hidden size-xl rounded-full absolute left-20 top-20 select-none"
-                />
-                <HolographicRobot3D />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Floating particles */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-neon-blue rounded-full animate-pulse opacity-60"></div>
-          <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-neon-purple rounded-full animate-pulse opacity-40 animation-delay-1000"></div>
-          <div className="absolute bottom-1/3 left-1/2 w-2 h-2 bg-acid-green rounded-full animate-pulse opacity-50 animation-delay-2000"></div>
-          <div className="absolute top-2/3 right-1/4 w-1 h-1 bg-neon-blue rounded-full animate-pulse opacity-70 animation-delay-1000"></div>
-        </div>
-
-        <div className="bg-black h-full w-full inset-0 absolute" />
-      </div>
+      <HeroSection />
 
       {/* Services Section */}
       <ServicesSection />

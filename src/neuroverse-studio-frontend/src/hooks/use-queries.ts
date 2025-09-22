@@ -276,7 +276,7 @@ export function useUserTokenTransfer() {
       toast.success(`Token transfer was successfully to ${from.toString()}!`);
 
       queryClient.invalidateQueries({
-        queryKey: ["neuroverse-user-tokens"],
+        queryKey: ["neuroverse_account_tokens"],
       });
     },
     onError: (error: Error) => {
