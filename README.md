@@ -7,7 +7,7 @@ A Decentralized AI agent marketplace built on the Internet Computer Protocol (IC
 # Presentations
 
 - **Pitch Deck:** [Pitch Deck](https://www.canva.com/design/DAGuFAT-k7E/xcRwsxdpAvYvnvHsmZoJiw/edit?utm_content=DAGuFAT-k7E&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
-- **App Demo:** [Application Demo](https://loom.com/share/folder/6dc0f526ab2a48c98e77b8344f9fcb65)
+- **App Demo:** [Application Demo](https://youtu.be/unUvcGStOeY)
 
 ## CANISTERS [LIVE]
 **Frontend** : (https://l3s3w-uyaaa-aaaaj-a2fuq-cai.icp0.io)
