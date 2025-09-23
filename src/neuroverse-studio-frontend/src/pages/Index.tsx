@@ -2,12 +2,11 @@ import ServicesSection from "@/components/sections/ServicesSection";
 import HowToUseSection from "@/components/sections/HowToUseSection";
 import FAQSection from "@/components/sections/FAQSection";
 import ComparisonSection from "@/components/sections/ComparisonSection";
-
 import { Suspense, lazy } from "react";
-
 import { LoadingAgentsFallback } from "@/components/agent/LoadingAgentsFallback";
 import CallToAction from "@/components/sections/CTASection";
 import HeroSection from "@/components/sections/HeroSection";
+import { HeroVideoDialog } from "@/components/ui/hero-video-dialog";
 
 // Lazy load heavy components
 const LazyAgentGrid = lazy(() => import("@/components/home/AgentGrid"));
@@ -22,6 +21,23 @@ const Index = () => {
 
       {/* Immersive Hero Section */}
       <HeroSection />
+
+      <section className="relative container max-w-6xl">
+        <HeroVideoDialog
+          className="block dark:hidden"
+          animationStyle="from-center"
+          videoSrc="https://www.youtube-nocookie.com/embed/unUvcGStOeY?si=KX5737jNn3C4voQx"
+          thumbnailSrc="thumbnails/demo_video_thumbnail.png"
+          thumbnailAlt="Neuroverse Demo Video"
+        />
+        <HeroVideoDialog
+          className="hidden dark:block"
+          animationStyle="from-center"
+          videoSrc="https://www.youtube-nocookie.com/embed/unUvcGStOeY?si=KX5737jNn3C4voQx"
+          thumbnailSrc="thumbnails/demo_video_thumbnail.png"
+          thumbnailAlt="Neuroverse Demo Video"
+        />
+      </section>
 
       {/* Services Section */}
       <ServicesSection />
