@@ -17,7 +17,7 @@ const getIdentityProvider = () => {
   if (typeof window !== "undefined") {
     return development
       ? `http://${CANISTER_ID_INTERNET_IDENTITY}.localhost:4943`
-      : "https://identity.ic0.app";
+      : "https://id.ai";
   }
   return undefined;
 };
